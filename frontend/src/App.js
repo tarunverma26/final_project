@@ -11,6 +11,7 @@ import Report from "@/pages/Report";
 import Tracking from "@/pages/Tracking";
 import MapView from "@/pages/MapView";
 import Dashboard from "@/pages/Dashboard";
+import Contractors from "@/pages/Contractors";
 import Info from "@/pages/Info";
 
 function Protected({ children }) {
@@ -30,7 +31,7 @@ function AppRoutes() {
       <Route path="/report" element={<Report />} />
       <Route path="/map" element={<MapView />} />
       <Route path="/events" element={<Info mode="events" />} />
-      <Route path="/contractors" element={<Info mode="contractors" />} />
+      <Route path="/contractors" element={<Contractors />} />
       <Route path="/tracking/:id" element={<Protected><Tracking /></Protected>} />
       <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
       <Route path="*" element={<Navigate to="/" replace />} />

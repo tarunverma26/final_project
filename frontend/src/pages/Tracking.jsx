@@ -6,7 +6,7 @@ import AiAssessmentCard from "@/components/AiAssessmentCard";
 import RainLayer from "@/components/RainLayer";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
-import { MapPin, ClipboardText } from "@phosphor-icons/react";
+import { MapPin, ClipboardText, Star, CheckCircle } from "@phosphor-icons/react";
 
 export default function Tracking() {
   const { id } = useParams();
@@ -14,8 +14,14 @@ export default function Tracking() {
   const [report, setReport] = useState(null);
   const [busy, setBusy] = useState(false);
   const [advErr, setAdvErr] = useState("");
+  const [hoverStar, setHoverStar] = useState(0);
+  const [rating, setRating] = useState(0);
+  const [rateBusy, setRateBusy] = useState(false);
+  const [rateErr, setRateErr] = useState("");
 
-  const load = () => api.get(`/reports/${id}`).then((r) => setReport(r.data));
+  const load = () => api.get(`/reports/${id}`).then((r) => {
+    setReport(r.data); setRating(r.data.citizen_rating || 0);
+  });
   useEffect(() => { load(); }, [id]);
 
   const advance = async () => {
@@ -28,6 +34,21 @@ export default function Tracking() {
     }
     setBusy(false);
   };
+
+  const submitRating = async (val) => {
+    setRateBusy(true); setRateErr("");
+    try {
+      const { data } = await api.post(`/reports/${id}/rate`, { rating: val });
+      setReport(data); setRating(val);
+    } catch (e) {
+      setRateErr(e.response?.data?.detail || "Unable to submit rating.");
+    }
+    setRateBusy(false);
+  };
+
+  const canRate =
+    report && report.status === "RESOLVED" && user && report.user_id === user.id;
+  const alreadyRated = report && report.citizen_rating;
 
   return (
     <div className="asphalt-bg min-h-screen">
@@ -74,8 +95,51 @@ export default function Tracking() {
               )}
             </div>
 
-            <div>
+            <div className="space-y-4">
               <AiAssessmentCard data={report.ai_assessment} thumbnail={report.photo_url} />
+
+              {canRate && (
+                <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-emerald-500/5 to-transparent p-6"
+                     data-testid="rate-widget">
+                  <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs">
+                    <CheckCircle size={14} weight="fill" /> ROAD HEALED
+                  </div>
+                  <div className="font-display font-bold text-lg mt-2">
+                    {alreadyRated ? "You rated this fix" : "Rate the fix"}
+                  </div>
+                  <p className="text-xs text-zinc-400 mt-1">
+                    Your stars feed the contractor's public trust score.
+                  </p>
+                  <div className="mt-3 flex gap-1" onMouseLeave={() => setHoverStar(0)}>
+                    {[1, 2, 3, 4, 5].map((i) => {
+                      const filled = (hoverStar || rating) >= i;
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          disabled={rateBusy || !!alreadyRated}
+                          onMouseEnter={() => !alreadyRated && setHoverStar(i)}
+                          onClick={() => !alreadyRated && submitRating(i)}
+                          data-testid={`rate-star-${i}`}
+                          className={`p-1 rounded transition-transform ${!alreadyRated ? "hover:scale-110" : ""}`}
+                        >
+                          <Star
+                            size={28}
+                            weight={filled ? "fill" : "regular"}
+                            className={filled ? "text-amber-400" : "text-zinc-600"}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {rateErr && <div className="mt-2 text-xs text-red-400">{rateErr}</div>}
+                  {alreadyRated && (
+                    <div className="mt-2 text-[11px] font-mono text-emerald-400">
+                      ✓ Rating locked · thank you for keeping the city honest.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -142,6 +142,32 @@ class Report(BaseModel):
     ai_assessment: dict
     timeline: list
     created_at: str
+    contractor_id: Optional[str] = None
+    citizen_rating: Optional[int] = None
+
+
+class Contractor(BaseModel):
+    id: str
+    name: str
+    road: str
+    region: str
+    focus: str
+
+
+class ContractorScorecard(Contractor):
+    total_complaints: int = 0
+    resolved: int = 0
+    in_progress: int = 0
+    resolution_rate_pct: int = 0
+    avg_resolution_hours: Optional[float] = None
+    avg_rating: Optional[float] = None
+    rating_count: int = 0
+    trust_score: int = 50
+    grade: str = "C"
+
+
+class RateReport(BaseModel):
+    rating: int = Field(ge=1, le=5)
 
 
 # ---------------- AI Vision (Claude Sonnet 5) ----------------
@@ -329,6 +355,7 @@ async def create_report(payload: ReportCreate, user: dict = Depends(get_current_
         ai = await real_ai_assessment(payload.photo_url, payload.category)
     if not ai:
         ai = mock_ai_assessment(payload.category, payload.severity)
+    contractor_id = await _pick_contractor_id(payload.road_name)
     doc = {
         "id": report_id,
         "user_id": user["id"],
@@ -344,6 +371,8 @@ async def create_report(payload: ReportCreate, user: dict = Depends(get_current_
         "ai_assessment": ai,
         "timeline": initial_timeline(),
         "created_at": datetime.now(timezone.utc).isoformat(),
+        "contractor_id": contractor_id,
+        "citizen_rating": None,
     }
     await db.reports.insert_one(doc)
     doc.pop("_id", None)
@@ -397,6 +426,134 @@ async def advance_report(report_id: str, user: dict = Depends(require_admin)):
         {"$set": {"timeline": timeline, "status": doc["status"]}},
     )
     return Report(**doc)
+
+
+@api_router.post("/reports/{report_id}/rate", response_model=Report)
+async def rate_report(report_id: str, payload: RateReport, user: dict = Depends(get_current_user)):
+    doc = await db.reports.find_one({"id": report_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Report not found")
+    if doc["user_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Only the reporter can rate this fix")
+    if doc.get("status") != "RESOLVED":
+        raise HTTPException(status_code=400, detail="You can only rate a resolved report")
+    await db.reports.update_one(
+        {"id": report_id},
+        {"$set": {"citizen_rating": payload.rating}},
+    )
+    doc["citizen_rating"] = payload.rating
+    return Report(**doc)
+
+
+# ---------------- Contractor Scorecards ----------------
+CONTRACTORS_SEED = [
+    {"name": "IRB Infrastructure Developers", "road": "NH-48", "region": "Delhi–Jaipur Corridor", "focus": "National Highways"},
+    {"name": "L&T Construction", "road": "NH-16", "region": "Chennai–Kolkata", "focus": "National Highways"},
+    {"name": "Ashoka Buildcon", "road": "SH-32", "region": "Maharashtra", "focus": "State Highways"},
+    {"name": "Dilip Buildcon", "road": "NH-8", "region": "Delhi–Mumbai", "focus": "National Highways"},
+    {"name": "GR Infraprojects", "road": "SH-6", "region": "Gujarat", "focus": "State Highways"},
+    {"name": "PNC Infratech", "road": "MDR-11", "region": "Uttar Pradesh", "focus": "District Roads"},
+]
+
+
+async def _pick_contractor_id(road_name: Optional[str]) -> Optional[str]:
+    contractors = await db.contractors.find({}, {"_id": 0}).to_list(50)
+    if not contractors:
+        return None
+    if road_name:
+        rn = road_name.lower()
+        for c in contractors:
+            if c["road"].lower() in rn:
+                return c["id"]
+    import random as _rand
+    return _rand.choice(contractors)["id"]
+
+
+def _grade_from_score(score: int) -> str:
+    if score >= 85: return "A"
+    if score >= 70: return "B"
+    if score >= 55: return "C"
+    if score >= 40: return "D"
+    return "F"
+
+
+async def _scorecard_for(contractor: dict) -> dict:
+    cid = contractor["id"]
+    reports = await db.reports.find({"contractor_id": cid}, {"_id": 0}).to_list(500)
+    total = len(reports)
+    resolved = [r for r in reports if r.get("status") == "RESOLVED"]
+    in_progress = [r for r in reports if r.get("status") in (
+        "UNDER_REVIEW", "FORWARDED", "ASSIGNED",
+        "WORK_PLANNED", "WORK_IN_PROGRESS", "RESOLUTION", "VERIFIED")]
+    resolution_rate = (len(resolved) / total) if total else 0
+
+    speeds = []
+    for r in resolved:
+        try:
+            tl = r.get("timeline") or []
+            first = tl[0].get("timestamp") if tl else None
+            last = None
+            for s in tl:
+                if s.get("status") == "completed" and s.get("timestamp"):
+                    last = s["timestamp"]
+            if first and last:
+                dt = (datetime.fromisoformat(last) - datetime.fromisoformat(first)).total_seconds() / 3600
+                if dt >= 0:
+                    speeds.append(dt)
+        except Exception:
+            continue
+    avg_speed = round(sum(speeds) / len(speeds), 1) if speeds else None
+
+    ratings = [r["citizen_rating"] for r in reports if isinstance(r.get("citizen_rating"), int)]
+    avg_rating = round(sum(ratings) / len(ratings), 2) if ratings else None
+
+    # Trust score 0-100
+    score = 40.0
+    score += resolution_rate * 30
+    if avg_rating is not None:
+        score += (avg_rating / 5.0) * 20
+    else:
+        score += 10  # neutral for no ratings
+    if avg_speed is None:
+        score += 5
+    elif avg_speed < 48:
+        score += 10
+    elif avg_speed < 168:
+        score += 5
+    trust = max(0, min(100, round(score)))
+
+    return {
+        **contractor,
+        "total_complaints": total,
+        "resolved": len(resolved),
+        "in_progress": len(in_progress),
+        "resolution_rate_pct": round(resolution_rate * 100),
+        "avg_resolution_hours": avg_speed,
+        "avg_rating": avg_rating,
+        "rating_count": len(ratings),
+        "trust_score": trust,
+        "grade": _grade_from_score(trust),
+    }
+
+
+@api_router.get("/contractors", response_model=List[ContractorScorecard])
+async def list_contractors():
+    contractors = await db.contractors.find({}, {"_id": 0}).to_list(50)
+    cards = [await _scorecard_for(c) for c in contractors]
+    cards.sort(key=lambda x: x["trust_score"], reverse=True)
+    return [ContractorScorecard(**c) for c in cards]
+
+
+@api_router.get("/contractors/{cid}")
+async def get_contractor(cid: str):
+    contractor = await db.contractors.find_one({"id": cid}, {"_id": 0})
+    if not contractor:
+        raise HTTPException(status_code=404, detail="Contractor not found")
+    card = await _scorecard_for(contractor)
+    reports = await db.reports.find(
+        {"contractor_id": cid}, {"_id": 0}
+    ).sort("created_at", -1).to_list(200)
+    return {"contractor": card, "reports": reports}
 
 
 # ---------------- Stats ----------------
@@ -577,11 +734,24 @@ async def seed_users():
         })
 
 
+async def seed_contractors():
+    for c in CONTRACTORS_SEED:
+        if not await db.contractors.find_one({"name": c["name"]}):
+            await db.contractors.insert_one({
+                "id": str(uuid.uuid4()),
+                **c,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
+
+
 @app.on_event("startup")
 async def on_startup():
     await db.users.create_index("email", unique=True)
     await db.reports.create_index("created_at")
+    await db.reports.create_index("contractor_id")
+    await db.contractors.create_index("name", unique=True)
     await seed_users()
+    await seed_contractors()
 
 
 @app.on_event("shutdown")
