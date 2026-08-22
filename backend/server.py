@@ -170,6 +170,16 @@ class RateReport(BaseModel):
     rating: int = Field(ge=1, le=5)
 
 
+class AuthorityVote(BaseModel):
+    road_name: Optional[str] = None
+    road_number: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    inferred_authority: Optional[str] = None
+    is_correct: bool
+    suggested_authority: Optional[str] = None
+
+
 # ---------------- AI Vision (Claude Sonnet 5) ----------------
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
 
@@ -556,6 +566,109 @@ async def get_contractor(cid: str):
     return {"contractor": card, "reports": reports}
 
 
+# ---------------- Road Ownership Layer ----------------
+KNOWN_AUTHORITIES = [
+    "National Highways Authority of India (NHAI)",
+    "State Public Works Department",
+    "Zilla Parishad / District Administration",
+    "Municipal Corporation / Local Body",
+    "Border Roads Organisation (BRO)",
+    "Cantonment Board",
+    "Toll Concessionaire (Private)",
+    "Private / Corporate Road",
+    "Other",
+]
+
+
+def _segment_key(road_name: Optional[str], road_number: Optional[str],
+                 lat: Optional[float] = None, lng: Optional[float] = None) -> str:
+    if road_number:
+        return f"ref:{road_number.strip().lower()}"
+    if road_name:
+        return f"name:{road_name.strip().lower()}"
+    if lat is not None and lng is not None:
+        return f"geo:{round(lat, 3)},{round(lng, 3)}"
+    return "unknown"
+
+
+async def _authority_stats_for(segment_key: str) -> dict:
+    pipeline = [
+        {"$match": {"segment_key": segment_key, "is_correct": True}},
+        {"$group": {"_id": "$authority", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+    ]
+    rows = await db.road_authority_votes.aggregate(pipeline).to_list(20)
+    tally = [{"authority": r["_id"], "count": r["count"]} for r in rows if r.get("_id")]
+    total = sum(r["count"] for r in tally)
+    disputes = await db.road_authority_votes.count_documents(
+        {"segment_key": segment_key, "is_correct": False}
+    )
+    return {
+        "segment_key": segment_key,
+        "tally": tally,
+        "total_confirmations": total,
+        "disputes": disputes,
+        "community_authority": tally[0]["authority"] if tally else None,
+    }
+
+
+@api_router.post("/roads/confirm-authority")
+async def confirm_authority(payload: AuthorityVote, user: dict = Depends(get_current_user)):
+    key = _segment_key(payload.road_name, payload.road_number, payload.latitude, payload.longitude)
+    if key == "unknown":
+        raise HTTPException(status_code=400, detail="Not enough info to identify road segment")
+
+    # Which authority is being voted on?
+    if payload.is_correct:
+        authority = payload.inferred_authority
+        if not authority:
+            raise HTTPException(status_code=400, detail="Nothing to confirm — no inferred authority")
+    else:
+        authority = payload.suggested_authority
+        if not authority:
+            raise HTTPException(status_code=400, detail="Please suggest the correct authority")
+
+    now = datetime.now(timezone.utc).isoformat()
+    # Upsert per (segment_key, user, authority) so a user can update their vote
+    await db.road_authority_votes.update_one(
+        {"segment_key": key, "user_id": user["id"], "authority": authority},
+        {"$set": {
+            "segment_key": key,
+            "user_id": user["id"],
+            "user_name": user.get("name"),
+            "authority": authority,
+            "is_correct": payload.is_correct,
+            "inferred_authority": payload.inferred_authority,
+            "road_name": payload.road_name,
+            "road_number": payload.road_number,
+            "latitude": payload.latitude,
+            "longitude": payload.longitude,
+            "updated_at": now,
+        }, "$setOnInsert": {"created_at": now}},
+        upsert=True,
+    )
+    stats = await _authority_stats_for(key)
+    return {"ok": True, **stats}
+
+
+@api_router.get("/roads/authority-stats")
+async def get_authority_stats(
+    road_name: Optional[str] = None,
+    road_number: Optional[str] = None,
+    lat: Optional[float] = None,
+    lng: Optional[float] = None,
+):
+    key = _segment_key(road_name, road_number, lat, lng)
+    if key == "unknown":
+        return {"segment_key": key, "tally": [], "total_confirmations": 0, "disputes": 0, "community_authority": None}
+    return await _authority_stats_for(key)
+
+
+@api_router.get("/roads/authority-options")
+async def authority_options():
+    return {"options": KNOWN_AUTHORITIES}
+
+
 # ---------------- Stats ----------------
 @api_router.get("/stats/overview")
 async def stats_overview():
@@ -671,7 +784,7 @@ async def identify_road(lat: float, lng: float):
     state = addr.get("state")
     country = addr.get("country")
 
-    return {
+    result = {
         "road_name": road_name,
         "road_number": ref,
         "district": district or city,
@@ -692,6 +805,19 @@ async def identify_road(lat: float, lng: float):
         "longitude": lng,
         "source": "openstreetmap",
     }
+    # Community-verified authority layer
+    key = _segment_key(result["road_name"], result["road_number"], lat, lng)
+    stats = await _authority_stats_for(key)
+    result["segment_key"] = key
+    result["community_authority"] = stats["community_authority"]
+    result["community_confirmations"] = stats["total_confirmations"]
+    result["community_disputes"] = stats["disputes"]
+    result["community_tally"] = stats["tally"]
+    result["authority_source"] = (
+        "community" if stats["community_authority"] and stats["total_confirmations"] >= 3
+        else ("inferred" if result["authority"] else "unknown")
+    )
+    return result
 
 
 # ---------------- Seed ----------------
@@ -750,6 +876,8 @@ async def on_startup():
     await db.reports.create_index("created_at")
     await db.reports.create_index("contractor_id")
     await db.contractors.create_index("name", unique=True)
+    await db.road_authority_votes.create_index("segment_key")
+    await db.road_authority_votes.create_index([("segment_key", 1), ("user_id", 1), ("authority", 1)], unique=True)
     await seed_users()
     await seed_contractors()
 

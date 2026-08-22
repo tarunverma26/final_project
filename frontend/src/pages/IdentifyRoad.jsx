@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import DarkMap from "@/components/DarkMap";
 import RainLayer from "@/components/RainLayer";
+import AuthorityConfirmCard from "@/components/AuthorityConfirmCard";
 import { api } from "@/lib/api";
 import { Crosshair, MapPin, Buildings, Warning, ArrowSquareOut } from "@phosphor-icons/react";
 
@@ -119,6 +120,8 @@ export default function IdentifyRoad() {
                 </a>
               </motion.div>
             )}
+
+            {info && <div className="mt-6"><AuthorityConfirmCard info={info} /></div>}
           </div>
 
           <div>
