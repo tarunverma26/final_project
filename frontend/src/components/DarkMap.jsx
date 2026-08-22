@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 
 const potholeIcon = new L.DivIcon({
@@ -14,10 +14,22 @@ const criticalIcon = new L.DivIcon({
   iconAnchor: [9, 9],
 });
 
-export default function DarkMap({ center = [28.4595, 77.0266], zoom = 12, markers = [], height = 420 }) {
+function ClickHandler({ onPick }) {
+  useMapEvents({ click(e) { if (onPick) onPick({ lat: e.latlng.lat, lng: e.latlng.lng }); } });
+  return null;
+}
+
+export default function DarkMap({
+  center = [28.4595, 77.0266],
+  zoom = 12,
+  markers = [],
+  height = 420,
+  onPick = null,
+  pickedMarker = null,
+}) {
   return (
     <div
-      className="rounded-2xl overflow-hidden border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
+      className="rounded-2xl overflow-hidden border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.6)] relative"
       style={{ height }}
       data-testid="dark-map"
     >
@@ -26,6 +38,12 @@ export default function DarkMap({ center = [28.4595, 77.0266], zoom = 12, marker
           attribution='&copy; OpenStreetMap contributors &copy; CARTO'
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
+        {onPick && <ClickHandler onPick={onPick} />}
+        {pickedMarker && (
+          <Marker position={[pickedMarker.lat, pickedMarker.lng]} icon={criticalIcon}>
+            <Popup>Picked location</Popup>
+          </Marker>
+        )}
         {markers.map((m, i) => (
           <Marker
             key={m.id || i}
@@ -44,6 +62,11 @@ export default function DarkMap({ center = [28.4595, 77.0266], zoom = 12, marker
           </Marker>
         ))}
       </MapContainer>
+      {onPick && (
+        <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-full glass text-[11px] font-mono text-amber-300 pointer-events-none">
+          Tip: click the map to drop a pin
+        </div>
+      )}
     </div>
   );
 }

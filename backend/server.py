@@ -16,6 +16,7 @@ from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
+import httpx
 
 
 # ---------------- Mongo ----------------
@@ -310,23 +311,113 @@ async def stats_overview():
     }
 
 
-# ---------------- Identify Road (mock) ----------------
+# ---------------- Identify Road (real reverse-geocoding via Nominatim) ----------------
+NOMINATIM_URL = "https://nominatim.openstreetmap.org/reverse"
+NOMINATIM_HEADERS = {
+    "User-Agent": "ROADWATCH/1.0 (civic-tech platform; contact: tarunverma80098@gmail.com)",
+    "Accept-Language": "en",
+}
+
+
+def _infer_authority(ref: Optional[str], country: Optional[str]) -> Optional[str]:
+    if not ref:
+        return None
+    ref_u = ref.upper().replace(" ", "")
+    if country and country.lower() == "india":
+        if ref_u.startswith("NH") or ref_u.startswith("NE"):
+            return "National Highways Authority of India (NHAI)"
+        if ref_u.startswith("SH"):
+            return "State Public Works Department"
+        if ref_u.startswith("MDR"):
+            return "Zilla Parishad / District Administration"
+        if ref_u.startswith("ODR") or ref_u.startswith("VR"):
+            return "Local Panchayat / Municipal Body"
+    if ref_u.startswith("A") or ref_u.startswith("M"):  # UK / EU style
+        return "National Roads Authority"
+    return None
+
+
+def _infer_condition(surface: Optional[str], smoothness: Optional[str]) -> str:
+    if smoothness:
+        s = smoothness.lower()
+        if any(x in s for x in ("excellent", "good")):
+            return f"Good ({smoothness})"
+        if any(x in s for x in ("bad", "very_bad", "horrible", "impassable")):
+            return f"Poor ({smoothness})"
+        return f"Fair ({smoothness})"
+    if surface:
+        s = surface.lower()
+        if any(x in s for x in ("asphalt", "concrete", "paved")):
+            return "Paved · condition unknown"
+        if any(x in s for x in ("unpaved", "gravel", "dirt", "ground", "sand", "mud")):
+            return "Unpaved · likely rough"
+    return "Data unavailable"
+
+
 @api_router.get("/roads/identify")
 async def identify_road(lat: float, lng: float):
-    """Mocked GPS road identification."""
+    """Real reverse-geocoding using OpenStreetMap Nominatim."""
+    params = {
+        "lat": lat, "lon": lng,
+        "format": "json",
+        "zoom": 17,
+        "addressdetails": 1,
+        "extratags": 1,
+        "namedetails": 1,
+    }
+    fallback = {
+        "road_name": None, "road_number": None, "district": None,
+        "state": None, "condition": "Data unavailable", "authority": None,
+        "contractor": None, "construction_year": None,
+        "last_maintenance": None, "funding_source": None,
+        "latitude": lat, "longitude": lng, "source": "unavailable",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=6.0, headers=NOMINATIM_HEADERS) as client_http:
+            r = await client_http.get(NOMINATIM_URL, params=params)
+            if r.status_code != 200:
+                return fallback
+            data = r.json()
+    except Exception:
+        return fallback
+
+    addr = data.get("address") or {}
+    extras = data.get("extratags") or {}
+    names = data.get("namedetails") or {}
+
+    road_name = (
+        names.get("name") or addr.get("road") or addr.get("pedestrian")
+        or addr.get("footway") or addr.get("path")
+    )
+    ref = extras.get("ref") or addr.get("ref")
+    district = (
+        addr.get("city_district") or addr.get("state_district")
+        or addr.get("county") or addr.get("suburb")
+    )
+    city = addr.get("city") or addr.get("town") or addr.get("village") or addr.get("municipality")
+    state = addr.get("state")
+    country = addr.get("country")
+
     return {
-        "road_name": "NH-48 (Delhi-Jaipur Highway)",
-        "road_number": "NH-48",
-        "district": "Gurugram",
-        "state": "Haryana",
-        "condition": "Poor - Multiple potholes reported",
-        "authority": "National Highways Authority of India",
-        "contractor": "IRB Infrastructure Developers",
-        "construction_year": 2016,
-        "last_maintenance": "2024-03-12",
-        "funding_source": "Central Government - MoRTH",
+        "road_name": road_name,
+        "road_number": ref,
+        "district": district or city,
+        "state": state,
+        "country": country,
+        "postcode": addr.get("postcode"),
+        "condition": _infer_condition(extras.get("surface"), extras.get("smoothness")),
+        "authority": _infer_authority(ref, country) or extras.get("operator"),
+        "contractor": extras.get("contractor"),
+        "construction_year": extras.get("start_date"),
+        "last_maintenance": extras.get("check_date") or extras.get("survey:date"),
+        "funding_source": None,
+        "surface": extras.get("surface"),
+        "maxspeed": extras.get("maxspeed"),
+        "lanes": extras.get("lanes"),
+        "display_name": data.get("display_name"),
         "latitude": lat,
         "longitude": lng,
+        "source": "openstreetmap",
     }
 
 
