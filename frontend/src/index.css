@@ -218,6 +218,43 @@ h1, h2, h3, h4, .font-display {
 }
 .roadwatch-marker.critical { background: #EF4444; box-shadow: 0 0 20px rgba(239,68,68,0.9); }
 
+/* ---------- Healing / Resolved marker ---------- */
+.roadwatch-marker.resolved {
+    background: #10B981;
+    border-color: #6EE7B7;
+    box-shadow: 0 0 20px rgba(16,185,129,0.9);
+    animation: none;
+    position: relative;
+}
+.roadwatch-marker.resolved::before,
+.roadwatch-marker.resolved::after {
+    content: '';
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 100%; height: 100%;
+    transform: translate(-50%, -50%) scale(1);
+    border-radius: 999px;
+    border: 2px solid rgba(16,185,129,0.8);
+    animation: heal-ripple 3.2s ease-out infinite;
+    pointer-events: none;
+}
+.roadwatch-marker.resolved::after { animation-delay: 1.6s; }
+@keyframes heal-ripple {
+    0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.9; border-color: rgba(16,185,129,0.9); }
+    60%  { opacity: 0.35; border-color: rgba(110,231,183,0.7); }
+    100% { transform: translate(-50%, -50%) scale(5.5); opacity: 0;   border-color: rgba(110,231,183,0.3); }
+}
+.roadwatch-marker.in-progress { background: #F59E0B; }
+.roadwatch-marker.in-progress::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 999px;
+    border: 2px dashed rgba(245,158,11,0.9);
+    animation: spin-slow 4s linear infinite;
+}
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+
 /* Number counter */
 .counter { font-variant-numeric: tabular-nums; }
 

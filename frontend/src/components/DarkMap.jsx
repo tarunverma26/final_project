@@ -1,18 +1,31 @@
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 
-const potholeIcon = new L.DivIcon({
-  className: "",
-  html: '<div class="roadwatch-marker"></div>',
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
-});
-const criticalIcon = new L.DivIcon({
-  className: "",
-  html: '<div class="roadwatch-marker critical"></div>',
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
-});
+const IN_PROGRESS_STATUSES = new Set([
+  "UNDER_REVIEW", "FORWARDED", "ASSIGNED",
+  "WORK_PLANNED", "WORK_IN_PROGRESS", "RESOLUTION", "VERIFIED",
+]);
+
+function makeIcon(cls) {
+  return new L.DivIcon({
+    className: "",
+    html: `<div class="roadwatch-marker ${cls}"></div>`,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+  });
+}
+
+const iconResolved = makeIcon("resolved");
+const iconInProgress = makeIcon("in-progress");
+const iconCritical = makeIcon("critical");
+const iconDefault = makeIcon("");
+
+function pickIcon(m) {
+  if (m.status === "RESOLVED") return iconResolved;
+  if (IN_PROGRESS_STATUSES.has(m.status)) return iconInProgress;
+  if (m.severity === "CRITICAL" || m.severity === "HIGH") return iconCritical;
+  return iconDefault;
+}
 
 function ClickHandler({ onPick }) {
   useMapEvents({ click(e) { if (onPick) onPick({ lat: e.latlng.lat, lng: e.latlng.lng }); } });
@@ -40,23 +53,26 @@ export default function DarkMap({
         />
         {onPick && <ClickHandler onPick={onPick} />}
         {pickedMarker && (
-          <Marker position={[pickedMarker.lat, pickedMarker.lng]} icon={criticalIcon}>
+          <Marker position={[pickedMarker.lat, pickedMarker.lng]} icon={iconCritical}>
             <Popup>Picked location</Popup>
           </Marker>
         )}
         {markers.map((m, i) => (
-          <Marker
-            key={m.id || i}
-            position={[m.latitude, m.longitude]}
-            icon={m.severity === "CRITICAL" || m.severity === "HIGH" ? criticalIcon : potholeIcon}
-          >
+          <Marker key={m.id || i} position={[m.latitude, m.longitude]} icon={pickIcon(m)}>
             <Popup>
               <div style={{ fontFamily: "'IBM Plex Sans'", minWidth: 180 }}>
-                <div style={{ fontWeight: 700, color: "#F59E0B" }}>{m.category}</div>
+                <div style={{ fontWeight: 700, color: m.status === "RESOLVED" ? "#10B981" : "#F59E0B" }}>
+                  {m.category}
+                </div>
                 <div style={{ fontSize: 12 }}>{m.road_name || "Unknown road"}</div>
                 <div style={{ fontSize: 11, color: "#666", marginTop: 4 }}>
                   Severity: {m.severity} · Status: {m.status}
                 </div>
+                {m.status === "RESOLVED" && (
+                  <div style={{ fontSize: 10, color: "#10B981", marginTop: 4, fontWeight: 600 }}>
+                    ✓ Healed by the city
+                  </div>
+                )}
               </div>
             </Popup>
           </Marker>
