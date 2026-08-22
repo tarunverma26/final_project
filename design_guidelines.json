@@ -1,0 +1,147 @@
+{
+  "theme_and_vibe": {
+    "concept": "The Living Damaged Road",
+    "emotion": "Cinematic, urgent, authoritative, highly technical yet accessible",
+    "mode": "Dark theme exclusively (asphalt aesthetic)"
+  },
+  "typography": {
+    "headings": {
+      "font": "Outfit",
+      "source": "Google Fonts",
+      "weights": ["300", "500", "700", "900"],
+      "usage": "Use Outfit for all H1-H4 headings. Apply 'tracking-tight' for massive H1 headers."
+    },
+    "body": {
+      "font": "IBM Plex Sans",
+      "source": "Google Fonts",
+      "weights": ["400", "500", "600"],
+      "usage": "Technical body copy, data tables, map tooltips, and dashboard labels."
+    },
+    "mono": {
+      "font": "JetBrains Mono",
+      "source": "Google Fonts",
+      "usage": "AI Assessment data points, coordinates, tracking IDs."
+    }
+  },
+  "colors": {
+    "background": {
+      "base": "#0A0A0A",
+      "surface": "#121212",
+      "surface_elevated": "#1A1A1A"
+    },
+    "primary": {
+      "main": "#F59E0B",
+      "hover": "#D97706",
+      "glow": "rgba(245, 158, 11, 0.4)"
+    },
+    "danger": {
+      "main": "#EF4444",
+      "hover": "#DC2626"
+    },
+    "success": {
+      "main": "#10B981"
+    },
+    "text": {
+      "primary": "#FFFFFF",
+      "secondary": "#A1A1AA",
+      "muted": "#52525B"
+    },
+    "borders": {
+      "glass": "rgba(255, 255, 255, 0.1)",
+      "solid": "#27272A"
+    }
+  },
+  "surfaces_and_materials": {
+    "crystal_glassmorphism": {
+      "css_classes": "bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]",
+      "usage": "Top navigation, Floating stat cards, Hero overlay elements."
+    },
+    "asphalt_card": {
+      "css_classes": "bg-[#121212] border border-[#27272A] rounded-xl shadow-lg",
+      "usage": "Dashboard cards, Report category bento boxes."
+    },
+    "ai_scanner_panel": {
+      "css_classes": "bg-gradient-to-b from-[#1A1A1A] to-[#0A0A0A] border border-orange-500/30 rounded-xl relative overflow-hidden",
+      "usage": "AI Assessment results."
+    }
+  },
+  "animations_and_motion": {
+    "water_ripple": {
+      "trigger": "Hover on interactive pothole",
+      "css": "transform: scale(1.05); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);",
+      "effect": "Use CSS keyframes to animate a concentric SVG circle expanding and fading (opacity: 0) to simulate water ripples."
+    },
+    "rain_effect": {
+      "concept": "Subtle vertical/diagonal moving particles in the Hero background.",
+      "implementation": "Framer motion absolute divs or a lightweight HTML canvas drawing faint white/gray dashes moving downwards."
+    },
+    "gps_pulse": {
+      "effect": "Concentric rings scaling up from 0.5 to 2.0 with opacity fading from 0.8 to 0.",
+      "duration": "2 seconds, infinite loop."
+    },
+    "page_scroll_parallax": {
+      "concept": "Simulate moving forward on a road.",
+      "implementation": "Use Framer Motion `useScroll` to scale up background road image slightly and translate Y for floating cards."
+    }
+  },
+  "components_spec": {
+    "hero_section": {
+      "layout": "100vh full-bleed absolute container with the asphalt road background image.",
+      "overlay": "bg-black/60 or a gradient bg-gradient-to-t from-[#0A0A0A] via-black/40 to-transparent",
+      "content": "Center aligned massive text. H1: 'THE ROAD TELLS A STORY. WE MAKE IT VISIBLE.' (Outfit, text-5xl md:text-7xl, font-bold, tracking-tight).",
+      "interactive_element": "Foreground absolute positioned div containing the pothole image cropped as an organic shape. On hover, trigger ripple animation and show a tooltip 'Pothole Detected - Severity: High'."
+    },
+    "identify_road": {
+      "layout": "Split section. Left: Text & CTA 'Identify Road Using GPS' with a pulsing target icon. Right: A dark glass card showing a Leaflet map snapshot with a pulsing orange GPS dot."
+    },
+    "report_problem": {
+      "layout": "Bento grid of square cards. 2-3 columns.",
+      "cards": "Each card represents a category (Pothole, Damaged Road, etc.). Use Phosphor icons (e.g., Warning, Path, Drop). Active state turns border to Orange.",
+      "interaction": "Clicking 'Pothole' triggers an animation where a pothole graphic is revealed in the form preview."
+    },
+    "ai_assessment": {
+      "layout": "Tech-focused card. Mono-spaced text for metrics. Progress bars for Confidence (94%) and Safety Risk.",
+      "visual": "Add a scanning line animation (a horizontal 1px bright orange div moving top to bottom infinitely) over an image thumbnail."
+    },
+    "road_profile": {
+      "layout": "Dense data dashboard style. 3-column grid for metrics (Authority, Contractor, Condition).",
+      "empty_state": "Use opacity-50 and italic text 'Data unavailable' with a subtle dash icon."
+    },
+    "complaint_timeline": {
+      "layout": "Vertical stepper component. 9 steps.",
+      "styling": "Completed steps: Orange circle, white text. Pending steps: Dark gray circle, muted text. Connecting line is half orange, half dark gray."
+    },
+    "dark_map": {
+      "library": "Leaflet + react-leaflet",
+      "tile_layer": "CartoDB Dark Matter (https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png)",
+      "markers": "Custom divIcon with glowing orange CSS shadows."
+    },
+    "dashboards": {
+      "layout": "Sidebar navigation (Glassmorphism). Main content area with a masonry or CSS grid layout.",
+      "cards": "Use Shadcn Card component customized with 'asphalt_card' surface specs."
+    },
+    "auth_screen": {
+      "layout": "Split screen layout. Left half: 'Login as Administration' (Disabled/Opacity-50). Right half: 'Login as User' (Active form). Background should be the dark road texture."
+    }
+  },
+  "media_and_assets": {
+    "images": {
+      "hero_background": "https://images.unsplash.com/photo-1566276423184-a8c13d2a88a1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAxODF8MHwxfHNlYXJjaHwyfHxkYXJrJTIwYXNwaGFsdCUyMHJvYWQlMjBuaWdodHxlbnwwfHx8fDE3ODczOTc4ODJ8MA&ixlib=rb-4.1.0&q=85",
+      "pothole_texture": "https://images.unsplash.com/photo-1784548789954-655c9a9e1a64?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwyfHxwb3Rob2xlJTIwcm9hZCUyMGNsb3NlJTIwdXB8ZW58MHx8fHwxNzg3Mzk3ODgyfDA&ixlib=rb-4.1.0&q=85",
+      "rain_overlay": "https://images.unsplash.com/photo-1428592953211-077101b2021b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODh8MHwxfHNlYXJjaHwyfHxyYWluJTIwd2F0ZXIlMjBkcm9wcyUyMHRleHR1cmV8ZW58MHx8fHwxNzg3Mzk3ODgyfDA&ixlib=rb-4.1.0&q=85"
+    },
+    "icons_library": "@phosphor-icons/react (Duotone style for premium feel)"
+  },
+  "universal_guidelines_for_main_agent": [
+    "You MUST use Tailwind CSS for all styling.",
+    "Do NOT add a generic 'transition: all'. Use explicit transitions (e.g., 'transition-colors duration-200').",
+    "Never use pure black or pure white everywhere. Tint blacks with the primary color (e.g., #0A0A0A) and use off-whites (#FAFAFA) for text.",
+    "Add 'data-testid' to EVERY button, link, and major input field.",
+    "DO NOT make generic centered layouts. Utilize grids, bento-box layouts, and asymmetric spacing.",
+    "Shadcn components must be customized to fit the 'Dark Asphalt / Glassmorphism' theme. Overwrite default white backgrounds in Shadcn Cards to #121212.",
+    "Ensure high contrast for text (APCA standard). Warning/Orange text on dark backgrounds must be legible.",
+    "NEVER use fully transparent backgrounds for dropdowns, overlays, or navbars.",
+    "All interactive elements must have hover states (e.g., slight translateY, box-shadow glow, or color shift).",
+    "Install required dependencies: framer-motion, leaflet, react-leaflet, @phosphor-icons/react, lucide-react."
+  ]
+}

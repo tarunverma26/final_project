@@ -1,0 +1,59 @@
+{
+  "summary": "First-iteration full-stack testing of ROADWATCH. Backend: 30 pytest cases across auth (register/login/role-gate/me), reports CRUD+RBAC, timeline advance, stats and mocked road identify -> 29/30 pass (only failure = intentional brute-force-lockout check which the app does not implement). Frontend: E2E Playwright coverage of landing, register, admin login, citizen login, role guard errors, protected-route redirect, identify-road GPS scan, report creation -> AI assessment card -> tracking, 9-step timeline, admin advance + persistence, dark Leaflet map/markers, nav links, logout, 404 fallback, and mobile viewport. All functional flows pass. One genuine layout bug found: the login card is horizontally offset (framer-motion transform overrides Tailwind -translate-x-1/2), overlapping the 'Login as User' pane on desktop and being half-clipped off-screen on mobile.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/auth/login", "issue": "No brute-force protection / lockout: 6 consecutive wrong-password attempts all return 401 (no 429, no account lock). Playbook expects lockout after 5 failures."},
+      {"endpoint": "CORS middleware", "issue": "allow_credentials=True combined with CORS_ORIGINS='*' wildcard. Browsers reject credentialed requests with wildcard origin; specify explicit origins instead."},
+      {"endpoint": "GET /api/stats/overview", "issue": "Showcase fallbacks are misleading once real data exists: with total=3 and 0 resolved/in-progress the computed pct is 0 and falls back to the hardcoded 73, so the landing page advertises '73%' resolved that is not real. Fallback should only apply when total==0."},
+      {"endpoint": "POST /api/auth/logout", "issue": "Documented in /app/memory/test_credentials.md but not implemented in server.py (frontend logout is client-side only). Docs/impl mismatch."},
+      {"endpoint": "GET /api/reports/public", "issue": "Unauthenticated endpoint returns full report documents including user_id, user_name, description and base64 photo_url. Consider a slimmer public projection (PII/payload size)."},
+      {"endpoint": "POST /api/reports/{id}/advance", "issue": "Advancing an already RESOLVED report returns 200 with no change instead of a 409/no-op signal; frontend has no feedback for this (advance errors are silently swallowed in Tracking.jsx catch block)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Login.jsx (motion.form)", "issue": "Login card is not centered: measured bounding box x=195 width=390 at a 390px viewport (right edge 585) -> ~50% of the card is clipped off-screen on mobile; on desktop (1920) it sits right-of-center and overlaps the 'Login as User' heading. Root cause: framer-motion animate={{y:0}} writes an inline transform that overrides the Tailwind '-translate-x-1/2 -translate-y-1/2' classes. Fix by animating x:'-50%', y:'-50%' or by wrapping the animated form in a separately positioned/centered container.", "selector": "[data-testid=\"login-form\"]", "priority": "HIGH"},
+      {"component": "Navbar.jsx", "issue": "Primary nav links (Identify Road / Report / Map / Events / Contractors) are hidden below md ('hidden md:flex') and there is no hamburger/drawer replacement (0 menu buttons found at 390px). Mobile users can only reach Login/Dashboard/Logout.", "selector": "[data-testid=\"main-navbar\"]", "priority": "HIGH"}
+    ],
+    "integration_issues": [
+      {"flow": "Citizen dashboard stats", "issue": "For a citizen, 'Total Reports' uses their own reports.length but Critical / In Progress / Resolved come from the global /api/stats/overview, so a citizen sees city-wide counters mixed with personal ones (e.g. Total=1 while Critical=1 belonged to another user's data). Either scope stats per-user or label them as city-wide.", "affected_selectors": ["[data-testid=\"dashboard-new-report\"]"]},
+      {"flow": "Tracking advance", "issue": "advance() in Tracking.jsx swallows errors (catch { /* noop */ }); a failed advance leaves the button silently doing nothing with no toast/error state.", "affected_selectors": ["[data-testid=\"advance-btn\"]"]}
+    ],
+    "design_issues": [
+      {"screen": "AI Assessment card", "issues": ["Disclaimer '* All fields above are the output of an AI assessment model.' is rgb(82,82,91) at 10px on a near-black background -> contrast ratio ~2.4:1, fails WCAG AA."]},
+      {"screen": "Login (desktop 1920)", "issues": ["Centered form card overlaps the right-hand 'Login as User' pane text due to the transform bug above; the role panes are only distinguishable by opacity so the selected state is easy to miss."]},
+      {"screen": "Login (mobile 390)", "issues": ["Two full-height side-by-side role buttons squeeze headlines to 3 lines and are largely covered by the clipped form card."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "HIGH: Fix login card centering in Login.jsx - framer-motion inline transform overrides Tailwind -translate-x-1/2/-translate-y-1/2 (use x:'-50%', y:'-50%' or a wrapper div).",
+    "HIGH: Add a mobile hamburger/drawer nav in Navbar.jsx so nav links are reachable below the md breakpoint.",
+    "MED: Scope citizen dashboard stat cards (Critical/In Progress/Resolved) to the logged-in user, or label them as city-wide.",
+    "MED: Only apply the /api/stats/overview showcase fallbacks (2481 / 73) when the DB is empty, otherwise real values are masked.",
+    "MED: Surface errors from the Tracking advance call (toast/error state) instead of the empty catch.",
+    "LOW: Add login rate limiting / lockout after repeated failures; replace CORS wildcard with explicit origins while allow_credentials=True; implement or remove the documented /api/auth/logout endpoint."
+  ],
+  "critical_code_review_comments": [
+    "Login.jsx: never mix Tailwind translate utilities with framer-motion animated transforms on the same element - the inline transform wins and silently breaks centering (this is the root cause of the clipped login card).",
+    "server.py list_reports contains redundant/contradictory query building (query['user_id'] set then reset to {} for admins) - simplify to a single branch to avoid future RBAC regressions.",
+    "Tracking.jsx: empty catch block hides API failures; every api call needs loading/success/error states.",
+    "stats_overview mixes real aggregates with hardcoded marketing fallbacks in the same response fields - keep demo values out of the data layer.",
+    "/api/reports/public leaks user_id/user_name/base64 photos to anonymous callers; add a response projection."
+  ],
+  "updated_files": [
+    "/app/frontend/src/components/Timeline.jsx",
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "97% (29/30)", "frontend": "100% of functional flows passed; 2 HIGH UI/responsive bugs found"},
+  "seed_data_creation": "Created a few TEST_/QA_ reports via API and UI (Pothole/Waterlogging/Drainage) plus registered qa_<ts>@roadwatch-qa.com users. API-created TEST_ data is cleaned up by the pytest session fixture; UI-created QA_ reports and qa_* users remain in the DB.",
+  "should_call_test_agent_after_fix": true,
+  "should_main_agent_self_test": false,
+  "test_credentials": "Admin tarunverma80098@gmail.com / admin123 and citizen citizen@roadwatch.dev / citizen123 from /app/memory/test_credentials.md - both work; admin bcrypt hash verified to start with $2b$.",
+  "context_for_next_testing_agent": "Backend regression suite lives at /app/backend/tests/backend_test.py (run: cd /app/backend && python -m pytest tests/backend_test.py -v). Only TestSecurity::test_brute_force_lockout fails by design (no rate limiting implemented) - keep it as a tracking test. Timeline steps now expose data-testid='timeline-step-<STEP>' with data-status attribute. Auth is Bearer JWT in localStorage 'rw_token' (no httpOnly cookie - by product choice, so playbook cookie checks are N/A; get_current_user does also accept an access_token cookie though none is ever set). After fixes, re-verify: (1) login card centering at 390px and 1920px, (2) mobile nav access, (3) citizen dashboard stat scoping.",
+  "rca_of_the_issue": "Login card offset: <motion.form className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 ...' animate={{opacity:1,y:0}}> - framer-motion serialises y:0 into an inline style transform:'translateY(0px)' which replaces the Tailwind translate utilities, so the card is only positioned by left/top 50% and extends 50% of its width beyond centre. Reproduced by measuring bounding_box at 390px (x=195, width=390) and by the 1920px screenshot where the card overlaps the 'Login as User' pane."
+}

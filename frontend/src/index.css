@@ -1,0 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    margin: 0;
+    background: #0A0A0A;
+    color: #FAFAFA;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .font-display {
+    font-family: 'Outfit', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+}
+.font-mono, code {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+    :root {
+        --background: 0 0% 4%;
+        --foreground: 0 0% 98%;
+        --card: 0 0% 7%;
+        --card-foreground: 0 0% 98%;
+        --popover: 0 0% 7%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 38 92% 50%;
+        --primary-foreground: 0 0% 4%;
+        --secondary: 0 0% 12%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 0 0% 12%;
+        --muted-foreground: 0 0% 64%;
+        --accent: 0 0% 15%;
+        --accent-foreground: 0 0% 98%;
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 15%;
+        --input: 0 0% 15%;
+        --ring: 38 92% 50%;
+        --radius: 0.75rem;
+    }
+}
+
+/* ---------- Road Background ---------- */
+.asphalt-bg {
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.05) 0%, transparent 55%),
+        radial-gradient(ellipse at 20% 80%, rgba(239,68,68,0.05) 0%, transparent 55%),
+        linear-gradient(180deg, #0A0A0A 0%, #111 100%);
+    position: relative;
+}
+.asphalt-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 25% 40%, rgba(255,255,255,0.03) 0px, transparent 2px),
+        radial-gradient(circle at 75% 60%, rgba(255,255,255,0.02) 0px, transparent 2px),
+        radial-gradient(circle at 40% 80%, rgba(255,255,255,0.02) 0px, transparent 2px);
+    background-size: 60px 60px, 90px 90px, 120px 120px;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+/* ---------- Road markings running down center ---------- */
+.road-lane {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    transform: translateX(-50%);
+    background-image: linear-gradient(180deg, #F5D67C 0%, #F5D67C 50%, transparent 50%);
+    background-size: 100% 60px;
+    opacity: 0.35;
+    animation: lane-move 1.2s linear infinite;
+    pointer-events: none;
+}
+@keyframes lane-move {
+    from { background-position-y: 0; }
+    to { background-position-y: 60px; }
+}
+
+/* ---------- Rain ---------- */
+.rain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 2;
+}
+.raindrop {
+    position: absolute;
+    top: -10%;
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.35));
+    animation: rain-fall linear infinite;
+}
+@keyframes rain-fall {
+    to { transform: translateY(120vh); }
+}
+
+/* ---------- Pothole ---------- */
+.pothole {
+    position: relative;
+    border-radius: 55% 45% 60% 40% / 55% 60% 40% 45%;
+    background:
+        radial-gradient(ellipse at 40% 35%, rgba(180,200,220,0.35) 0%, rgba(30,40,55,0.6) 30%, #050505 65%),
+        #000;
+    box-shadow:
+        inset 0 8px 20px rgba(0,0,0,0.9),
+        inset 0 -4px 12px rgba(80,90,110,0.15),
+        0 0 40px rgba(0,0,0,0.7);
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+    cursor: pointer;
+}
+.pothole:hover { transform: scale(1.06); }
+.pothole::after {
+    content: '';
+    position: absolute; inset: 15%;
+    border-radius: inherit;
+    background: radial-gradient(circle at 40% 30%, rgba(255,255,255,0.15), transparent 55%);
+    pointer-events: none;
+}
+
+/* Ripple */
+.ripple {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid rgba(150,190,220,0.5);
+    animation: ripple-out 1.6s ease-out infinite;
+    pointer-events: none;
+}
+.ripple:nth-child(2) { animation-delay: 0.5s; }
+.ripple:nth-child(3) { animation-delay: 1s; }
+@keyframes ripple-out {
+    0% { transform: scale(0.6); opacity: 0.9; }
+    100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* GPS pulse */
+.gps-pulse {
+    position: relative;
+    width: 20px; height: 20px;
+    border-radius: 999px;
+    background: #F59E0B;
+    box-shadow: 0 0 20px rgba(245,158,11,0.7);
+}
+.gps-pulse::before, .gps-pulse::after {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: 999px;
+    border: 2px solid #F59E0B;
+    animation: gps-ring 2s ease-out infinite;
+}
+.gps-pulse::after { animation-delay: 1s; }
+@keyframes gps-ring {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(3.5); opacity: 0; }
+}
+
+/* AI scan line */
+.scan-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #F59E0B, transparent);
+    box-shadow: 0 0 12px rgba(245,158,11,0.8);
+    animation: scan 2.4s ease-in-out infinite;
+}
+@keyframes scan {
+    0%, 100% { top: 0%; }
+    50% { top: 100%; }
+}
+
+/* Headlight sweep */
+.headlight {
+    position: absolute;
+    left: -20%; top: 60%;
+    width: 40%; height: 30%;
+    background: radial-gradient(ellipse at center, rgba(255,240,200,0.15), transparent 60%);
+    filter: blur(30px);
+    animation: headlight-sweep 8s linear infinite;
+    pointer-events: none;
+}
+@keyframes headlight-sweep {
+    0% { transform: translateX(0) translateY(0); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translateX(300%) translateY(-20%); opacity: 0; }
+}
+
+/* Utility glass */
+.glass {
+    background: rgba(10,10,10,0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Leaflet dark tweaks */
+.leaflet-container { background: #0A0A0A; }
+.roadwatch-marker {
+    width: 18px; height: 18px;
+    background: #F59E0B;
+    border: 2px solid #FDE68A;
+    border-radius: 999px;
+    box-shadow: 0 0 20px rgba(245,158,11,0.9);
+    animation: gps-ring 2s ease-out infinite;
+}
+.roadwatch-marker.critical { background: #EF4444; box-shadow: 0 0 20px rgba(239,68,68,0.9); }
+
+/* Number counter */
+.counter { font-variant-numeric: tabular-nums; }
+
+/* Selection */
+::selection { background: #F59E0B; color: #0A0A0A; }
