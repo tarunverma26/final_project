@@ -17,6 +17,10 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 import httpx
+import json
+import re
+import base64
+from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent, TextDelta, StreamDone
 
 
 # ---------------- Mongo ----------------
@@ -140,6 +144,112 @@ class Report(BaseModel):
     created_at: str
 
 
+# ---------------- AI Vision (Claude Sonnet 5) ----------------
+EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
+
+AI_SYSTEM_PROMPT = (
+    "You are ROADWATCH's vision inspector. You look at a single photo of a road "
+    "problem submitted by a citizen and score it. Respond with ONLY a compact JSON "
+    "object (no markdown, no prose) with exactly these fields:\n"
+    '{"category": "<one of: Pothole, Damaged Road, Cracks, Waterlogging, Drainage, '
+    'Streetlight, Sign, Divider, Traffic Obstruction, Other>",\n'
+    ' "severity": "LOW|MEDIUM|HIGH|CRITICAL",\n'
+    ' "safety_risk": "LOW|MEDIUM|HIGH",\n'
+    ' "confidence": <integer 0-100>,\n'
+    ' "priority": "LOW|MEDIUM|HIGH|CRITICAL",\n'
+    ' "recommendation": "<one short sentence, actionable>"}\n'
+    "Base severity on depth/extent of damage, safety_risk on impact to vehicles/pedestrians, "
+    "confidence on how clearly the issue is visible. Never include any extra keys or commentary."
+)
+
+
+def _extract_base64_from_data_url(data_url: str) -> Optional[str]:
+    """Return only the base64 payload from a data URL. None if not a data URL."""
+    if not data_url or not isinstance(data_url, str):
+        return None
+    m = re.match(r"^data:image/[a-zA-Z0-9.+-]+;base64,(.+)$", data_url.strip(), re.DOTALL)
+    if m:
+        return m.group(1)
+    # If it's already raw base64
+    try:
+        base64.b64decode(data_url[:100], validate=True)
+        return data_url
+    except Exception:
+        return None
+
+
+def _coerce_ai_json(raw: str, hint_category: str) -> dict:
+    """Best-effort parse the model output into our AI assessment shape."""
+    fallback = mock_ai_assessment(hint_category, "MEDIUM")
+    if not raw:
+        return fallback
+    # Try to extract a JSON object
+    match = re.search(r"\{[\s\S]*\}", raw)
+    if not match:
+        return fallback
+    try:
+        data = json.loads(match.group(0))
+    except Exception:
+        return fallback
+
+    def norm(v, allowed, default):
+        s = str(v or "").upper().strip()
+        return s if s in allowed else default
+
+    severity = norm(data.get("severity"), {"LOW", "MEDIUM", "HIGH", "CRITICAL"}, "MEDIUM")
+    priority = norm(data.get("priority"), {"LOW", "MEDIUM", "HIGH", "CRITICAL"}, severity)
+    safety = norm(data.get("safety_risk"), {"LOW", "MEDIUM", "HIGH"}, "MEDIUM")
+    try:
+        conf = int(data.get("confidence", 80))
+    except Exception:
+        conf = 80
+    conf = max(0, min(100, conf))
+
+    return {
+        "category": data.get("category") or hint_category,
+        "severity": severity,
+        "safety_risk": safety,
+        "confidence": conf,
+        "priority": priority,
+        "recommendation": (data.get("recommendation") or "Schedule maintenance based on severity.").strip(),
+        "model": "claude-sonnet-5",
+    }
+
+
+async def real_ai_assessment(image_data_url: str, hint_category: str) -> Optional[dict]:
+    """Call Claude Sonnet 5 vision via emergentintegrations. Returns None on failure."""
+    if not EMERGENT_LLM_KEY:
+        return None
+    b64 = _extract_base64_from_data_url(image_data_url)
+    if not b64:
+        return None
+    try:
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"roadwatch-{uuid.uuid4()}",
+            system_message=AI_SYSTEM_PROMPT,
+        ).with_model("anthropic", "claude-sonnet-5")
+
+        msg = UserMessage(
+            text=(
+                f"The citizen selected category: {hint_category}. "
+                "Inspect the photo and return the JSON as instructed."
+            ),
+            file_contents=[ImageContent(image_base64=b64)],
+        )
+        buf = []
+        async for ev in chat.stream_message(msg):
+            if isinstance(ev, TextDelta):
+                buf.append(ev.content)
+            elif isinstance(ev, StreamDone):
+                break
+        raw = "".join(buf).strip()
+        return _coerce_ai_json(raw, hint_category)
+    except Exception as e:
+        logging.warning(f"[AI] vision assessment failed: {e}")
+        return None
+
+
 # ---------------- AI Mock ----------------
 def mock_ai_assessment(category: str, severity: str) -> dict:
     sev_map = {"LOW": 62, "MEDIUM": 78, "HIGH": 91, "CRITICAL": 96}
@@ -213,19 +323,25 @@ async def me(user: dict = Depends(get_current_user)):
 @api_router.post("/reports", response_model=Report)
 async def create_report(payload: ReportCreate, user: dict = Depends(get_current_user)):
     report_id = str(uuid.uuid4())
+    # Real AI first (when a photo is present); mock fallback otherwise
+    ai = None
+    if payload.photo_url:
+        ai = await real_ai_assessment(payload.photo_url, payload.category)
+    if not ai:
+        ai = mock_ai_assessment(payload.category, payload.severity)
     doc = {
         "id": report_id,
         "user_id": user["id"],
         "user_name": user["name"],
-        "category": payload.category,
-        "severity": payload.severity,
+        "category": ai.get("category") or payload.category,
+        "severity": ai.get("severity") or payload.severity,
         "description": payload.description,
         "latitude": payload.latitude,
         "longitude": payload.longitude,
         "road_name": payload.road_name,
         "photo_url": payload.photo_url,
         "status": "SUBMITTED",
-        "ai_assessment": mock_ai_assessment(payload.category, payload.severity),
+        "ai_assessment": ai,
         "timeline": initial_timeline(),
         "created_at": datetime.now(timezone.utc).isoformat(),
     }

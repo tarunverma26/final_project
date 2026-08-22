@@ -44,6 +44,7 @@ const DEMO_AI = {
   confidence: 94,
   priority: "CRITICAL",
   recommendation: "Immediate patching required within 48 hours.",
+  model: "claude-sonnet-5",
 };
 
 export default function Landing() {
@@ -188,7 +189,7 @@ export default function Landing() {
             <p className="text-[11px] tracking-widest text-amber-400 font-mono">/ AI ASSESSMENT</p>
             <h2 className="font-display font-black text-4xl md:text-5xl mt-2">Every photo tells us something.</h2>
             <p className="text-zinc-400 mt-4 max-w-md">
-              Our vision layer scores severity, safety risk & priority — so the right people move first.
+              Claude Sonnet 5 vision scores severity, safety risk & priority — so the right people move first.
             </p>
             <AiAssessmentCard data={DEMO_AI} thumbnail={POTHOLE_IMG} />
           </div>

@@ -21,6 +21,11 @@ export default function AiAssessmentCard({ data, thumbnail }) {
         <span className="font-mono text-xs tracking-widest text-amber-400">
           ROADWATCH · AI ASSESSMENT
         </span>
+        {data.model && (
+          <span className="ml-auto font-mono text-[10px] tracking-widest text-zinc-500 uppercase">
+            model: {data.model}
+          </span>
+        )}
       </div>
 
       {thumbnail && (
@@ -64,7 +69,9 @@ export default function AiAssessmentCard({ data, thumbnail }) {
         &gt; {data.recommendation}
       </p>
       <div className="mt-2 text-[10px] text-zinc-400 italic">
-        * All fields above are the output of an AI assessment model.
+        * {data.model
+              ? `Real-time vision analysis by ${data.model} — not a human inspection.`
+              : "Simulated AI assessment (photo not provided)."}
       </div>
     </motion.div>
   );

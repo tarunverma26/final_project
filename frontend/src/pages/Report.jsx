@@ -156,7 +156,7 @@ export default function Report() {
 
             <button type="submit" disabled={busy} data-testid="report-submit-btn"
               className="w-full py-3 rounded-lg bg-amber-500 text-black font-semibold hover:bg-amber-400 disabled:opacity-50 flex items-center justify-center gap-2">
-              {busy ? "Submitting..." : <>Submit Report <PaperPlaneRight size={16} weight="bold" /></>}
+              {busy ? "Analyzing photo with AI..." : <>Submit Report <PaperPlaneRight size={16} weight="bold" /></>}
             </button>
           </div>
 
@@ -179,7 +179,7 @@ export default function Report() {
                   className="rounded-2xl border border-white/5 bg-[#111] p-6 h-full flex flex-col items-center justify-center text-center">
                   <Wrench size={36} className="text-amber-400" weight="duotone" />
                   <div className="mt-4 font-display font-bold text-lg">AI assessment appears here</div>
-                  <p className="text-sm text-zinc-500 mt-2 max-w-xs">Once you submit, our vision layer scores severity, safety &amp; priority in real time.</p>
+                  <p className="text-sm text-zinc-500 mt-2 max-w-xs">Upload a photo and our vision layer (Claude Sonnet 5) scores severity, safety &amp; priority in real time.</p>
                 </motion.div>
               )}
             </AnimatePresence>
