@@ -21,7 +21,7 @@ import GlobalStyle from "@/GlobalStyle";
  */
 export default function App() {
   return (
-    <div className="min-h-screen bg-[#0E0E10] text-[#F2EFE9] relative">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] relative">
       <GlobalStyle />
       <Navbar />
 
@@ -57,16 +57,17 @@ export default function App() {
         <DashboardSection />
       </main>
 
-      <footer className="py-12 text-center text-xs text-zinc-500 border-t border-white/5 bg-[#070709]">
+      <footer className="py-10 text-center text-xs text-[#64748B] border-t border-[#E2E8F0] bg-white">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="font-display font-black text-sm text-white">
-            ROAD<span className="text-amber-400">WATCH</span> · CIVIC BHARAT
+          <div className="font-display font-extrabold text-base text-[#12304A]">
+            ROAD<span className="text-[#F97316]">WATCH</span> · CIVIC BHARAT
           </div>
-          <div className="text-zinc-500">
+          <div>
             © {new Date().getFullYear()} Open Public Infrastructure & Civic Accountability Network.
           </div>
-          <div className="font-mono text-[11px] text-amber-400/80">
-            STATUS: ALL MONITORS OPERATIONAL
+          <div className="font-mono text-xs font-semibold text-[#16A34A] flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
+            <span>STATUS: ALL MONITORS OPERATIONAL</span>
           </div>
         </div>
       </footer>

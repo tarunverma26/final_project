@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { formatApiErrorDetail } from "@/lib/api";
-import RainLayer from "@/components/RainLayer";
-import { ArrowRight, Warning } from "@phosphor-icons/react";
+import WeatherAtmosphere from "@/components/WeatherAtmosphere";
+import { ArrowRight, Warning, UserPlus } from "@phosphor-icons/react";
 
 export default function Register() {
   const { register } = useAuth();
@@ -14,7 +14,8 @@ export default function Register() {
 
   const submit = async (e) => {
     e.preventDefault();
-    setBusy(true); setErr("");
+    setBusy(true);
+    setErr("");
     try {
       await register(form.email.trim().toLowerCase(), form.password, form.name);
       nav("/dashboard");
@@ -25,43 +26,105 @@ export default function Register() {
   };
 
   return (
-    <div className="relative min-h-screen asphalt-bg flex items-center justify-center px-6" data-testid="register-page">
-      <RainLayer count={40} />
-      <div className="road-lane opacity-20" />
-      <form onSubmit={submit} className="relative z-10 w-full max-w-md p-8 rounded-2xl glass">
-        <div className="text-[11px] tracking-widest text-amber-400 font-mono">/ NEW CITIZEN</div>
-        <h1 className="font-display font-black text-3xl mt-1">Join ROADWATCH</h1>
+    <div
+      className="relative min-h-screen bg-[#F8FAFC] flex items-center justify-center px-6 py-16 overflow-hidden"
+      data-testid="register-page"
+    >
+      <WeatherAtmosphere rainCount={25} showClouds={true} showSun={true} />
 
-        <label className="block mt-6 text-xs text-zinc-400 font-mono">NAME</label>
-        <input required value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (err) setErr(""); }}
-          data-testid="register-name"
-          className="mt-1 w-full rounded-lg bg-black/60 border border-white/10 px-4 py-3 focus:outline-none focus:border-amber-500/60" />
+      <form
+        onSubmit={submit}
+        className="relative z-10 w-full max-w-md p-8 rounded-2xl bg-white border border-[#E2E8F0] shadow-lg"
+      >
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold text-[#EA580C] bg-orange-50 border border-orange-200/80 mb-2">
+          <UserPlus size={15} weight="bold" className="text-[#F97316]" />
+          <span>/ NEW CITIZEN ONBOARDING</span>
+        </div>
 
-        <label className="block mt-4 text-xs text-zinc-400 font-mono">EMAIL</label>
-        <input required type="email" value={form.email} onChange={(e) => { setForm({ ...form, email: e.target.value }); if (err) setErr(""); }}
-          data-testid="register-email"
-          className="mt-1 w-full rounded-lg bg-black/60 border border-white/10 px-4 py-3 focus:outline-none focus:border-amber-500/60" />
+        <h1 className="font-display font-extrabold text-3xl text-[#12304A]">
+          Join ROADWATCH
+        </h1>
+        <p className="text-sm text-[#64748B] mt-1">
+          Document roads, submit verified reports, and track civic repairs in the open.
+        </p>
 
-        <label className="block mt-4 text-xs text-zinc-400 font-mono">PASSWORD</label>
-        <input required type="password" minLength={6} value={form.password}
-          onChange={(e) => { setForm({ ...form, password: e.target.value }); if (err) setErr(""); }}
-          data-testid="register-password"
-          className="mt-1 w-full rounded-lg bg-black/60 border border-white/10 px-4 py-3 focus:outline-none focus:border-amber-500/60" />
+        <div className="mt-6 space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-[#12304A] font-mono uppercase tracking-wider">
+              FULL NAME
+            </label>
+            <input
+              required
+              value={form.name}
+              onChange={(e) => {
+                setForm({ ...form, name: e.target.value });
+                if (err) setErr("");
+              }}
+              placeholder="Aarav Sharma"
+              data-testid="register-name"
+              className="mt-1.5 w-full rounded-xl bg-white border border-[#E2E8F0] px-4 py-2.5 text-sm text-[#12304A] placeholder-[#94A3B8] focus:outline-none focus:border-[#F97316] focus:ring-2 focus:ring-orange-100 transition-all font-medium"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-[#12304A] font-mono uppercase tracking-wider">
+              EMAIL ADDRESS
+            </label>
+            <input
+              required
+              type="email"
+              value={form.email}
+              onChange={(e) => {
+                setForm({ ...form, email: e.target.value });
+                if (err) setErr("");
+              }}
+              placeholder="aarav@gmail.com"
+              data-testid="register-email"
+              className="mt-1.5 w-full rounded-xl bg-white border border-[#E2E8F0] px-4 py-2.5 text-sm text-[#12304A] placeholder-[#94A3B8] focus:outline-none focus:border-[#F97316] focus:ring-2 focus:ring-orange-100 transition-all font-medium"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-[#12304A] font-mono uppercase tracking-wider">
+              PASSWORD (MIN 6 CHARS)
+            </label>
+            <input
+              required
+              type="password"
+              minLength={6}
+              value={form.password}
+              onChange={(e) => {
+                setForm({ ...form, password: e.target.value });
+                if (err) setErr("");
+              }}
+              placeholder="••••••••••••"
+              data-testid="register-password"
+              className="mt-1.5 w-full rounded-xl bg-white border border-[#E2E8F0] px-4 py-2.5 text-sm text-[#12304A] placeholder-[#94A3B8] focus:outline-none focus:border-[#F97316] focus:ring-2 focus:ring-orange-100 transition-all font-medium"
+            />
+          </div>
+        </div>
 
         {err && (
-          <div className="mt-4 text-sm text-red-400 flex items-start gap-2" data-testid="register-error">
-            <Warning size={16} className="mt-0.5" /> {err}
+          <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-[#DC2626] flex items-start gap-2 font-medium" data-testid="register-error">
+            <Warning size={16} className="mt-0.5 shrink-0" />
+            <span>{err}</span>
           </div>
         )}
 
-        <button type="submit" disabled={busy} data-testid="register-submit"
-          className="mt-6 w-full py-3 rounded-lg bg-amber-500 text-black font-semibold hover:bg-amber-400 disabled:opacity-50 flex items-center justify-center gap-2">
-          {busy ? "Creating..." : <>Create Account <ArrowRight size={16} weight="bold" /></>}
+        <button
+          type="submit"
+          disabled={busy}
+          data-testid="register-submit"
+          className="mt-6 w-full py-3.5 rounded-xl bg-[#F97316] text-white font-semibold text-sm hover:bg-[#EA580C] disabled:opacity-50 flex items-center justify-center gap-2 transition-all duration-150 shadow-sm hover:shadow hover:-translate-y-0.5 cursor-pointer"
+        >
+          {busy ? "Creating account..." : <><span>Create Account</span> <ArrowRight size={16} weight="bold" /></>}
         </button>
 
-        <div className="mt-4 text-center text-xs text-zinc-500">
-          Have an account?{" "}
-          <Link to="/login" className="text-amber-400 hover:underline">Login</Link>
+        <div className="mt-5 pt-4 border-t border-[#F1F5F9] text-center text-xs text-[#64748B]">
+          Already have an account?{" "}
+          <Link to="/login" className="text-[#F97316] font-semibold hover:underline">
+            Login
+          </Link>
         </div>
       </form>
     </div>

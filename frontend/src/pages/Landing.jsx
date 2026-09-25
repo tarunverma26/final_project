@@ -12,11 +12,12 @@ import ContractorsSection from "@/components/ContractorsSection";
 import DashboardSection from "@/components/DashboardSection";
 import GlobalStyle from "@/GlobalStyle";
 import { Link } from "react-router-dom";
-import RainLayer from "@/components/RainLayer";
+import WeatherAtmosphere from "@/components/WeatherAtmosphere";
+import { ArrowRight, MapTrifold, Sparkle } from "@phosphor-icons/react";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-[#0E0E10] text-[#F2EFE9] relative">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] relative">
       <GlobalStyle />
       <Navbar />
 
@@ -52,47 +53,59 @@ export default function Landing() {
         <DashboardSection />
 
         {/* Final Call to Action */}
-        <section className="relative py-24 asphalt-bg overflow-hidden border-t border-white/5">
-          <RainLayer count={25} />
+        <section className="relative py-24 bg-white overflow-hidden border-t border-[#E2E8F0]">
+          <WeatherAtmosphere rainCount={25} showClouds={true} showSun={true} />
+          
           <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-            <h2 className="font-display font-black text-4xl md:text-6xl text-white">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-[#0F766E] bg-teal-50 border border-teal-200 font-semibold mb-4">
+              <Sparkle size={14} weight="fill" />
+              SMART INDIA HACKATHON · NATIONAL CIVIC DEPLOYMENT
+            </div>
+
+            <h2 className="font-display font-extrabold text-4xl sm:text-5xl md:text-6xl text-[#12304A] tracking-tight leading-tight">
               The road remembers.
               <br />
-              <span className="text-amber-400">Make sure the city does too.</span>
+              <span className="text-[#F97316]">Make sure the city does too.</span>
             </h2>
-            <p className="mt-4 text-base md:text-lg text-zinc-300 max-w-xl mx-auto">
+            <p className="mt-4 text-base sm:text-lg text-[#64748B] max-w-xl mx-auto leading-relaxed">
               Join thousands of citizens documenting civic infrastructure in the open.
+              Audit repairs, track municipal budgets, and navigate safer roads.
             </p>
-            <div className="mt-8 flex justify-center gap-3">
+
+            <div className="mt-9 flex flex-wrap justify-center items-center gap-3.5">
               <Link
                 to="/login"
                 data-testid="cta-login-btn"
-                className="px-8 py-3 rounded-full bg-amber-500 text-black font-semibold hover:bg-amber-400 transition shadow-lg shadow-amber-500/25"
+                className="px-8 py-3.5 rounded-xl bg-[#F97316] text-white font-semibold hover:bg-[#EA580C] transition-all duration-150 shadow-sm hover:shadow hover:-translate-y-0.5 inline-flex items-center gap-2 cursor-pointer text-sm"
               >
-                Get Started
+                <span>Get Started Now</span>
+                <ArrowRight size={16} weight="bold" />
               </Link>
               <Link
                 to="/map"
                 data-testid="cta-map-btn"
-                className="px-8 py-3 rounded-full border border-white/20 hover:bg-white/10 text-white font-medium transition"
+                className="px-8 py-3.5 rounded-xl bg-white border border-[#CBD5E1] hover:border-[#F97316] hover:bg-slate-50 text-[#12304A] font-semibold transition-all duration-150 shadow-2xs hover:-translate-y-0.5 inline-flex items-center gap-2 cursor-pointer text-sm"
               >
-                Explore the Map
+                <MapTrifold size={18} weight="duotone" className="text-[#0F766E]" />
+                <span>Explore Live Map</span>
               </Link>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="py-10 text-center text-xs text-zinc-500 border-t border-white/5 bg-[#070709]">
+      {/* Clean Light Civic Footer */}
+      <footer className="py-10 text-center text-xs text-[#64748B] border-t border-[#E2E8F0] bg-white">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="font-display font-black text-sm text-white">
-            ROAD<span className="text-amber-400">WATCH</span> · CIVIC BHARAT
+          <div className="font-display font-extrabold text-base tracking-tight text-[#12304A]">
+            ROAD<span className="text-[#F97316]">WATCH</span> · CIVIC BHARAT
           </div>
           <div>
             © {new Date().getFullYear()} ROADWATCH — Built for cities that repair themselves.
           </div>
-          <div className="font-mono text-[11px] text-amber-400/80">
-            TRANSPARENT CIVIC INFRASTRUCTURE
+          <div className="font-mono text-xs font-semibold text-[#16A34A] flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
+            <span>TRANSPARENT CIVIC INFRASTRUCTURE</span>
           </div>
         </div>
       </footer>

@@ -57,7 +57,16 @@ export default function Navbar() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [smartOpen, setSmartOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const smartDropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleScroll() {
+      setScrolled(window.scrollY > 15);
+    }
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -85,63 +94,82 @@ export default function Navbar() {
     }
   };
 
+  const isActive = (path) => location.pathname === path;
+
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-[#0E0E10]/90 backdrop-blur-md"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 border-b ${
+        scrolled
+          ? "bg-white/95 backdrop-blur-md border-[#E2E8F0] shadow-sm py-2.5"
+          : "bg-white border-[#E2E8F0] py-3.5"
+      }`}
       data-testid="main-navbar"
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
-        {/* Brand Logo */}
-        <Link to="/" className="flex items-center gap-2" data-testid="nav-logo">
-          <div className="w-8 h-8 rounded-md bg-[#E59518] flex items-center justify-center shadow-sm">
-            <Radar size={18} weight="bold" className="text-[#0E0E10]" />
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6">
+        {/* Brand Logo: ROAD in Navy #12304A, WATCH in Orange #F97316 */}
+        <Link to="/" className="flex items-center gap-2.5 group" data-testid="nav-logo">
+          <div className="w-8 h-8 rounded-lg bg-[#F97316] flex items-center justify-center shadow-xs transition-transform group-hover:scale-105">
+            <Radar size={18} weight="bold" className="text-white" />
           </div>
-          <span className="font-display font-black tracking-tight text-lg text-[#F2EFE9]">
-            ROAD<span className="text-[#E59518]">WATCH</span>
+          <span className="font-display font-extrabold tracking-tight text-xl">
+            <span className="text-[#12304A]">ROAD</span>
+            <span className="text-[#F97316]">WATCH</span>
           </span>
         </Link>
 
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-1">
-          {/* Preserved Original 5 Links in Exact Order */}
-          {links.map(({ to, label, icon: Icon }) => (
-            <Link
-              key={to}
-              to={to}
-              data-testid={`nav-${label.toLowerCase().replace(/\s+/g, "-")}`}
-              className="px-3 py-2 rounded-md text-sm text-[#A39E93] hover:text-[#F2EFE9] hover:bg-white/[0.04] transition-colors flex items-center gap-1.5"
-            >
-              <Icon size={16} weight="duotone" />
-              {label}
-            </Link>
-          ))}
+          {links.map(({ to, label, icon: Icon }) => {
+            const active = isActive(to);
+            return (
+              <Link
+                key={to}
+                to={to}
+                data-testid={`nav-${label.toLowerCase().replace(/\s+/g, "-")}`}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  active
+                    ? "text-[#F97316] bg-orange-50 font-semibold"
+                    : "text-[#64748B] hover:text-[#12304A] hover:bg-slate-50"
+                }`}
+              >
+                <Icon
+                  size={16}
+                  weight={active ? "bold" : "duotone"}
+                  className={active ? "text-[#F97316]" : "text-[#64748B]"}
+                />
+                {label}
+              </Link>
+            );
+          })}
 
-          {/* New Anchor Links: Smart Layer Dropdown */}
+          {/* Smart Layer Dropdown */}
           <div className="relative" ref={smartDropdownRef}>
             <button
               onClick={() => setSmartOpen((v) => !v)}
               data-testid="nav-smart-layer-btn"
-              className={`px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-1.5 font-medium ${
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
                 smartOpen
-                  ? "bg-[#E59518]/12 text-[#E59518] border border-[#E59518]/25"
-                  : "text-[#E59518]/90 hover:text-[#E59518] hover:bg-[#E59518]/[0.08]"
+                  ? "bg-teal-50 text-[#0F766E] border border-teal-200"
+                  : "text-[#0F766E] hover:bg-teal-50/70"
               }`}
             >
-              <Sparkle size={15} weight="fill" className="text-[#E59518]" />
-              Smart Layer
+              <Sparkle size={15} weight="fill" className="text-[#0F766E]" />
+              <span>Smart Layer</span>
               <CaretDown
                 size={12}
-                className={`transition-transform duration-200 ${smartOpen ? "rotate-180" : ""}`}
+                className={`transition-transform duration-200 text-[#0F766E] ${
+                  smartOpen ? "rotate-180" : ""
+                }`}
               />
             </button>
 
             {/* Smart Layer Popover */}
             {smartOpen && (
               <div
-                className="absolute top-full mt-2 left-0 w-72 rounded-2xl bg-[#141416] border border-white/[0.08] shadow-2xl p-2 z-50 backdrop-blur-xl"
+                className="absolute top-full mt-2 left-0 w-72 rounded-2xl bg-white border border-[#E2E8F0] shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150"
                 data-testid="smart-layer-menu"
               >
-                <div className="px-3 py-2 text-[10px] font-mono text-[#78736A] tracking-wider">
+                <div className="px-3 py-1.5 text-[10px] font-mono text-[#64748B] uppercase tracking-wider font-semibold">
                   INTELLIGENCE & SIGNALS
                 </div>
                 {smartLinks.map(({ to, anchor, label, desc, icon: Icon }) => (
@@ -150,16 +178,16 @@ export default function Navbar() {
                     href={to}
                     onClick={(e) => handleAnchorClick(e, anchor, to)}
                     data-testid={`nav-smart-${anchor}`}
-                    className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] text-left transition-colors group cursor-pointer"
+                    className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 text-left transition-colors group cursor-pointer"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-[#E59518]/10 border border-[#E59518]/20 flex items-center justify-center text-[#E59518] shrink-0 group-hover:scale-105 transition-transform">
+                    <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center text-[#0F766E] shrink-0 group-hover:bg-[#0F766E] group-hover:text-white transition-colors">
                       <Icon size={16} weight="duotone" />
                     </div>
                     <div>
-                      <div className="text-sm font-semibold text-[#F2EFE9] group-hover:text-[#E59518] transition-colors">
+                      <div className="text-sm font-semibold text-[#12304A] group-hover:text-[#0F766E] transition-colors">
                         {label}
                       </div>
-                      <div className="text-xs text-[#A39E93] leading-snug">
+                      <div className="text-xs text-[#64748B] leading-snug">
                         {desc}
                       </div>
                     </div>
@@ -170,24 +198,24 @@ export default function Navbar() {
           </div>
         </nav>
 
-        {/* User Auth and CTA Controls */}
-        <div className="flex items-center gap-2">
+        {/* User Auth and Action Controls */}
+        <div className="flex items-center gap-2.5">
           {user ? (
             <>
               {user.role === "admin" && (
                 <Link
                   to="/admin/dashboard"
                   data-testid="nav-admin-dashboard-btn"
-                  className="px-3 py-1.5 rounded-lg bg-[#E59518]/10 border border-[#E59518]/25 text-[#E59518] hover:bg-[#E59518]/20 text-xs font-mono font-medium flex items-center gap-1.5 transition"
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-[#12304A] text-xs font-mono font-semibold flex items-center gap-1.5 border border-[#E2E8F0] transition"
                 >
-                  <ShieldCheck size={14} weight="bold" />
-                  {user.authority || "Admin Portal"}
+                  <ShieldCheck size={14} weight="bold" className="text-[#0F766E]" />
+                  <span>{user.authority || "Admin Portal"}</span>
                 </Link>
               )}
               <Link
                 to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}
                 data-testid="nav-dashboard-btn"
-                className="text-sm px-3 py-2 rounded-md text-[#E59518] hover:bg-white/[0.04]"
+                className="text-sm font-semibold px-3 py-1.5 rounded-lg text-[#12304A] hover:bg-slate-100 transition-colors"
               >
                 {user.name.split(" ")[0]}
               </Link>
@@ -198,16 +226,16 @@ export default function Navbar() {
                   nav("/");
                 }}
                 data-testid="nav-logout-btn"
-                className="text-sm px-3 py-2 rounded-md bg-white/[0.04] hover:bg-white/[0.08] text-[#A39E93] hover:text-[#F2EFE9] flex items-center gap-1.5"
+                className="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-[#64748B] hover:text-[#0F172A] flex items-center gap-1.5 border border-[#E2E8F0] transition-colors cursor-pointer"
               >
-                <SignOut size={16} /> Logout
+                <SignOut size={14} /> Logout
               </button>
             </>
           ) : (
             <Link
               to="/login"
               data-testid="nav-login-btn"
-              className="text-sm px-4 py-2 rounded-md bg-[#E59518] text-[#0E0E10] hover:bg-[#F0A632] font-semibold transition-colors flex items-center gap-1.5 shadow-sm"
+              className="text-sm px-4 py-2 rounded-xl bg-[#F97316] text-white hover:bg-[#EA580C] font-semibold transition-all duration-150 flex items-center gap-1.5 shadow-sm hover:shadow hover:-translate-y-0.5 cursor-pointer"
             >
               <SignIn size={16} weight="bold" /> Login
             </Link>
@@ -217,7 +245,7 @@ export default function Navbar() {
           <button
             onClick={() => setOpen((v) => !v)}
             data-testid="nav-mobile-toggle"
-            className="md:hidden ml-1 p-2 rounded-md bg-white/[0.04] hover:bg-white/[0.08] text-[#F2EFE9]"
+            className="md:hidden ml-1 p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-[#12304A] border border-[#E2E8F0]"
             aria-label="Toggle navigation"
           >
             {open ? <X size={18} /> : <List size={18} />}
@@ -228,27 +256,33 @@ export default function Navbar() {
       {/* Mobile Drawer Menu */}
       {open && (
         <div
-          className="md:hidden border-t border-white/[0.06] bg-[#0E0E10]/95 backdrop-blur-xl"
+          className="md:hidden border-t border-[#E2E8F0] bg-white shadow-lg animate-in fade-in slide-in-from-top-2"
           data-testid="mobile-menu"
         >
           <nav className="max-w-7xl mx-auto flex flex-col p-4 gap-1">
-            {/* Preserved Original 5 Links */}
-            {links.map(({ to, label, icon: Icon }) => (
-              <Link
-                key={to}
-                to={to}
-                onClick={() => setOpen(false)}
-                data-testid={`nav-mobile-${label.toLowerCase().replace(/\s+/g, "-")}`}
-                className="px-3 py-2.5 rounded-md text-sm text-[#A39E93] hover:text-[#F2EFE9] hover:bg-white/[0.04] flex items-center gap-2"
-              >
-                <Icon size={16} weight="duotone" /> {label}
-              </Link>
-            ))}
+            {links.map(({ to, label, icon: Icon }) => {
+              const active = isActive(to);
+              return (
+                <Link
+                  key={to}
+                  to={to}
+                  onClick={() => setOpen(false)}
+                  data-testid={`nav-mobile-${label.toLowerCase().replace(/\s+/g, "-")}`}
+                  className={`px-3 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 ${
+                    active
+                      ? "text-[#F97316] bg-orange-50 font-semibold"
+                      : "text-[#64748B] hover:text-[#12304A] hover:bg-slate-50"
+                  }`}
+                >
+                  <Icon size={16} weight="duotone" /> {label}
+                </Link>
+              );
+            })}
 
             {/* Smart Layer Anchor Section */}
-            <div className="mt-3 pt-3 border-t border-white/[0.06]">
-              <div className="px-3 py-1 text-[11px] font-mono text-[#E59518] tracking-wider">
-                / SMART LAYER ANCHORS
+            <div className="mt-2 pt-2 border-t border-[#E2E8F0]">
+              <div className="px-3 py-1 text-[11px] font-mono text-[#0F766E] font-semibold uppercase tracking-wider">
+                SMART LAYER SECTIONS
               </div>
               {smartLinks.map(({ to, anchor, label, icon: Icon }) => (
                 <a
@@ -256,9 +290,9 @@ export default function Navbar() {
                   href={to}
                   onClick={(e) => handleAnchorClick(e, anchor, to)}
                   data-testid={`nav-mobile-${anchor}`}
-                  className="px-3 py-2.5 rounded-md text-sm text-[#A39E93] hover:text-[#F2EFE9] hover:bg-white/[0.04] flex items-center gap-2"
+                  className="px-3 py-2.5 rounded-lg text-sm text-[#64748B] hover:text-[#0F766E] hover:bg-teal-50 flex items-center gap-2"
                 >
-                  <Icon size={16} weight="duotone" className="text-[#E59518]" /> {label}
+                  <Icon size={16} weight="duotone" className="text-[#0F766E]" /> {label}
                 </a>
               ))}
             </div>

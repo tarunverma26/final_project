@@ -15,19 +15,20 @@ import Contractors from "@/pages/Contractors";
 import Info from "@/pages/Info";
 
 import AdminRegister from "@/pages/AdminRegister";
+import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
 
 function Protected({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen asphalt-bg" />;
+  if (loading) return <div className="min-h-screen bg-[#F8FAFC]" />;
   if (!user) return <Navigate to="/login" replace />;
   return children;
 }
 
 function AdminProtected({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen asphalt-bg" />;
-  if (!user || user.role !== "admin") return <Navigate to="/login" replace />;
+  if (loading) return <div className="min-h-screen bg-[#F8FAFC]" />;
+  if (!user || user.role !== "admin") return <Navigate to="/admin/login" replace />;
   return children;
 }
 
@@ -37,7 +38,9 @@ function AppRoutes() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin/register" element={<AdminRegister />} />
+      <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
       <Route path="/identify" element={<IdentifyRoad />} />
       <Route path="/report" element={<Report />} />
       <Route path="/map" element={<MapView />} />

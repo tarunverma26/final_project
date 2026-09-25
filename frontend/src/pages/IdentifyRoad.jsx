@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import DarkMap from "@/components/DarkMap";
-import RainLayer from "@/components/RainLayer";
+import WeatherAtmosphere from "@/components/WeatherAtmosphere";
 import AuthorityConfirmCard from "@/components/AuthorityConfirmCard";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
@@ -143,40 +143,43 @@ export default function IdentifyRoad() {
     (!user?.authority || !info?.authority || user.authority === info.authority);
 
   return (
-    <div className="asphalt-bg min-h-screen">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] relative selection:bg-[#F97316] selection:text-white">
       <Navbar />
-      <RainLayer count={30} />
-      <div className="max-w-7xl mx-auto px-6 pt-32 pb-16 relative">
-        <p className="text-[11px] tracking-widest text-amber-400 font-mono">/ IDENTIFY</p>
-        <h1 className="font-display font-black text-4xl md:text-6xl mt-2">Which road are you on?</h1>
-        <p className="text-zinc-400 mt-3 max-w-xl">
+      <WeatherAtmosphere />
+      <div className="max-w-7xl mx-auto px-6 pt-32 pb-16 relative z-10">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200/80 mb-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#F97316] animate-pulse" />
+          <p className="text-[11px] font-bold tracking-widest text-[#EA580C] uppercase font-mono">/ IDENTIFY ROAD</p>
+        </div>
+        <h1 className="font-display font-black text-4xl md:text-5xl tracking-tight text-[#12304A] mt-2">Which road are you on?</h1>
+        <p className="text-[#64748B] text-base mt-2 max-w-xl">
           Use GPS or click anywhere on the map — we resolve the actual road name, authority, and infrastructure specifications in real time.
         </p>
 
         <div className="grid lg:grid-cols-2 gap-8 mt-10">
           <div>
-            <div className="rounded-2xl bg-[#111] border border-white/5 p-6">
+            <div className="rounded-2xl bg-white border border-[#E2E8F0] shadow-sm p-6">
               <div className="flex items-center gap-3">
                 <div
                   className={
                     gettingLocation || scanning
-                      ? "gps-pulse"
+                      ? "w-4 h-4 rounded-full bg-[#F97316] animate-ping"
                       : loc
-                      ? "w-5 h-5 bg-emerald-500 rounded-full"
-                      : "w-5 h-5 bg-amber-500/50 rounded-full"
+                      ? "w-4 h-4 bg-emerald-500 rounded-full ring-4 ring-emerald-100"
+                      : "w-4 h-4 bg-orange-400/60 rounded-full ring-4 ring-orange-100"
                   }
                 />
                 <div>
-                  <div className="text-xs font-mono text-zinc-500">GPS COORDINATES</div>
-                  <div className="font-mono text-amber-400 text-sm md:text-base" data-testid="identify-coords">
+                  <div className="text-[11px] font-mono uppercase tracking-wider text-[#64748B] font-semibold">GPS COORDINATES</div>
+                  <div className="font-mono text-[#12304A] font-semibold text-sm md:text-base mt-0.5" data-testid="identify-coords">
                     {gettingLocation ? (
-                      <span className="text-amber-300 animate-pulse flex items-center gap-1.5">
+                      <span className="text-[#EA580C] animate-pulse flex items-center gap-1.5">
                         <CircleNotch className="animate-spin" size={16} /> Acquiring live GPS fix...
                       </span>
                     ) : loc ? (
                       `${loc.lat.toFixed(5)}° N, ${loc.lng.toFixed(5)}° E`
                     ) : (
-                      <span className="text-zinc-500 italic">No coordinates selected yet</span>
+                      <span className="text-[#94A3B8] italic font-normal">No coordinates selected yet</span>
                     )}
                   </div>
                 </div>
@@ -186,7 +189,7 @@ export default function IdentifyRoad() {
                 onClick={useGps}
                 disabled={gettingLocation || scanning}
                 data-testid="identify-gps-btn"
-                className="mt-6 w-full py-4 rounded-xl bg-amber-500 text-black font-semibold hover:bg-amber-400 disabled:opacity-60 flex items-center justify-center gap-2 transition"
+                className="mt-6 w-full py-3.5 rounded-xl bg-[#F97316] text-white font-semibold hover:bg-[#EA580C] disabled:opacity-60 flex items-center justify-center gap-2 shadow-md shadow-orange-500/15 transition"
               >
                 {gettingLocation ? (
                   <>
@@ -205,12 +208,12 @@ export default function IdentifyRoad() {
                   </>
                 )}
               </button>
-              <div className="mt-3 text-xs text-zinc-500 font-mono text-center">
-                or click anywhere on the map to drop a pin
+              <div className="mt-3 text-xs text-[#64748B] font-mono text-center">
+                or click anywhere on the interactive map to drop a pin
               </div>
               {err && (
-                <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400 flex items-center gap-2">
-                  <Warning size={16} /> {err}
+                <div className="mt-3 p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2 font-medium">
+                  <Warning size={16} className="text-red-500 flex-shrink-0" /> {err}
                 </div>
               )}
             </div>
@@ -219,26 +222,26 @@ export default function IdentifyRoad() {
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-6 rounded-2xl bg-[#111] border border-amber-500/30 p-6"
+                className="mt-6 rounded-2xl bg-white border border-[#E2E8F0] shadow-sm p-6"
                 data-testid="road-info-card"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-mono tracking-widest text-amber-400">/ ROAD PROFILE</span>
+                    <span className="text-[11px] font-mono font-bold tracking-widest text-[#EA580C]">/ ROAD PROFILE</span>
                     {info.has_overlay && (
-                      <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-mono">
+                      <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-50 border border-emerald-200 text-emerald-700 font-mono font-semibold">
                         OFFICIAL OVERLAY
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                    <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-widest font-semibold">
                       {info.source || "openstreetmap"}
                     </span>
                     {canEditRoad && (
                       <button
                         onClick={openEditModal}
-                        className="px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 text-xs font-mono flex items-center gap-1.5 transition"
+                        className="px-2.5 py-1 rounded-lg bg-orange-50 border border-orange-200 text-[#EA580C] hover:bg-orange-100 text-xs font-mono font-semibold flex items-center gap-1.5 transition"
                       >
                         <PencilSimple size={13} />
                         Edit road info
@@ -247,11 +250,11 @@ export default function IdentifyRoad() {
                   </div>
                 </div>
 
-                <div className="font-display font-black text-2xl mt-2 text-white">
-                  {info.road_name || <span className="italic text-zinc-500">Unnamed segment</span>}
+                <div className="font-display font-black text-2xl mt-2 text-[#12304A]">
+                  {info.road_name || <span className="italic text-[#94A3B8]">Unnamed segment</span>}
                 </div>
                 {info.display_name && (
-                  <div className="text-xs text-zinc-400 mt-1">{info.display_name}</div>
+                  <div className="text-xs text-[#64748B] mt-1">{info.display_name}</div>
                 )}
 
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
@@ -275,7 +278,7 @@ export default function IdentifyRoad() {
                     target="_blank"
                     rel="noreferrer"
                     data-testid="identify-osm-link"
-                    className="mt-5 inline-flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 font-mono"
+                    className="mt-5 inline-flex items-center gap-1.5 text-xs text-[#EA580C] hover:text-[#C2410C] font-mono font-semibold"
                   >
                     Open on OpenStreetMap <ArrowSquareOut size={12} />
                   </a>
@@ -305,149 +308,149 @@ export default function IdentifyRoad() {
       {/* Admin Road Profile Overlay Modal */}
       <AnimatePresence>
         {isEditing && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#141414] border border-amber-500/30 rounded-2xl w-full max-w-xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+              className="bg-white border border-[#E2E8F0] rounded-2xl w-full max-w-xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto"
             >
-              <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <div className="flex items-center justify-between pb-4 border-b border-[#E2E8F0]">
                 <div>
-                  <h3 className="font-display font-bold text-lg text-white">Edit Road Profile Overlay</h3>
-                  <p className="text-xs text-zinc-400 mt-0.5">
+                  <h3 className="font-display font-bold text-lg text-[#12304A]">Edit Road Profile Overlay</h3>
+                  <p className="text-xs text-[#64748B] mt-0.5">
                     Authority overrides for OSM Way #{info?.osm_id || "current"}
                   </p>
                 </div>
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-white/5"
+                  className="text-[#64748B] hover:text-[#12304A] p-1.5 rounded-lg hover:bg-slate-100 transition"
                 >
                   <X size={20} />
                 </button>
               </div>
 
               {editSuccess && (
-                <div className="mt-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
-                  <CheckCircle size={16} /> {editSuccess}
+                <div className="mt-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2 font-medium">
+                  <CheckCircle size={16} className="text-emerald-600" /> {editSuccess}
                 </div>
               )}
 
               <form onSubmit={saveOverlay} className="mt-4 space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-mono uppercase text-zinc-400">Road Name</label>
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#475569] font-medium">Road Name</label>
                     <input
                       type="text"
                       value={editForm.road_name}
                       onChange={(e) => setEditForm({ ...editForm, road_name: e.target.value })}
                       placeholder="e.g. NH-48 Express Corridor"
-                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                      className="mt-1 w-full bg-white border border-[#CBD5E1] rounded-xl p-2.5 text-xs text-[#0F172A] focus:border-[#F97316] outline-none shadow-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-mono uppercase text-zinc-400">Road Ref / Number</label>
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#475569] font-medium">Road Ref / Number</label>
                     <input
                       type="text"
                       value={editForm.road_number}
                       onChange={(e) => setEditForm({ ...editForm, road_number: e.target.value })}
                       placeholder="e.g. NH-48"
-                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                      className="mt-1 w-full bg-white border border-[#CBD5E1] rounded-xl p-2.5 text-xs text-[#0F172A] focus:border-[#F97316] outline-none shadow-sm"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-mono uppercase text-zinc-400">Governing Authority</label>
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#475569] font-medium">Governing Authority</label>
                     <input
                       type="text"
                       value={editForm.authority}
                       disabled={!!user?.authority}
                       onChange={(e) => setEditForm({ ...editForm, authority: e.target.value })}
-                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white disabled:opacity-60 focus:border-amber-400 outline-none"
+                      className="mt-1 w-full bg-white border border-[#CBD5E1] rounded-xl p-2.5 text-xs text-[#0F172A] disabled:bg-slate-100 disabled:opacity-75 focus:border-[#F97316] outline-none shadow-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-mono uppercase text-zinc-400">Assigned Contractor</label>
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#475569] font-medium">Assigned Contractor</label>
                     <input
                       type="text"
                       value={editForm.contractor}
                       onChange={(e) => setEditForm({ ...editForm, contractor: e.target.value })}
                       placeholder="e.g. L&T Construction"
-                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                      className="mt-1 w-full bg-white border border-[#CBD5E1] rounded-xl p-2.5 text-xs text-[#0F172A] focus:border-[#F97316] outline-none shadow-sm"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="text-[11px] font-mono uppercase text-zinc-400">Surface Type</label>
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#475569] font-medium">Surface Type</label>
                     <input
                       type="text"
                       value={editForm.surface}
                       onChange={(e) => setEditForm({ ...editForm, surface: e.target.value })}
                       placeholder="e.g. Asphalt"
-                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                      className="mt-1 w-full bg-white border border-[#CBD5E1] rounded-xl p-2.5 text-xs text-[#0F172A] focus:border-[#F97316] outline-none shadow-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-mono uppercase text-zinc-400">Speed Limit</label>
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#475569] font-medium">Speed Limit</label>
                     <input
                       type="text"
                       value={editForm.maxspeed}
                       onChange={(e) => setEditForm({ ...editForm, maxspeed: e.target.value })}
                       placeholder="e.g. 90 km/h"
-                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                      className="mt-1 w-full bg-white border border-[#CBD5E1] rounded-xl p-2.5 text-xs text-[#0F172A] focus:border-[#F97316] outline-none shadow-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-mono uppercase text-zinc-400">Lane Count</label>
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#475569] font-medium">Lane Count</label>
                     <input
                       type="text"
                       value={editForm.lanes}
                       onChange={(e) => setEditForm({ ...editForm, lanes: e.target.value })}
                       placeholder="e.g. 6"
-                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                      className="mt-1 w-full bg-white border border-[#CBD5E1] rounded-xl p-2.5 text-xs text-[#0F172A] focus:border-[#F97316] outline-none shadow-sm"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-mono uppercase text-zinc-400">Construction Year</label>
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#475569] font-medium">Construction Year</label>
                     <input
                       type="text"
                       value={editForm.construction_year}
                       onChange={(e) => setEditForm({ ...editForm, construction_year: e.target.value })}
                       placeholder="e.g. 2018"
-                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                      className="mt-1 w-full bg-white border border-[#CBD5E1] rounded-xl p-2.5 text-xs text-[#0F172A] focus:border-[#F97316] outline-none shadow-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-mono uppercase text-zinc-400">Last Maintenance</label>
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#475569] font-medium">Last Maintenance</label>
                     <input
                       type="text"
                       value={editForm.last_maintenance}
                       onChange={(e) => setEditForm({ ...editForm, last_maintenance: e.target.value })}
                       placeholder="e.g. 2025-11"
-                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                      className="mt-1 w-full bg-white border border-[#CBD5E1] rounded-xl p-2.5 text-xs text-[#0F172A] focus:border-[#F97316] outline-none shadow-sm"
                     />
                   </div>
                 </div>
 
-                <div className="pt-3 flex items-center justify-end gap-3 border-t border-white/10">
+                <div className="pt-4 flex items-center justify-end gap-3 border-t border-[#E2E8F0]">
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
-                    className="px-4 py-2 rounded-xl text-xs text-zinc-400 hover:text-white"
+                    className="px-4 py-2.5 rounded-xl text-xs text-[#64748B] hover:text-[#12304A] font-medium transition"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={savingOverlay}
-                    className="px-5 py-2.5 rounded-xl bg-amber-500 text-black font-semibold text-xs hover:bg-amber-400 disabled:opacity-60 flex items-center gap-1.5 transition"
+                    className="px-5 py-2.5 rounded-xl bg-[#F97316] text-white font-semibold text-xs hover:bg-[#EA580C] disabled:opacity-60 flex items-center gap-1.5 shadow-sm transition"
                   >
                     {savingOverlay ? (
                       <>
@@ -469,12 +472,12 @@ export default function IdentifyRoad() {
 
 function Field({ icon: Icon, label, value, accent }) {
   return (
-    <div className="rounded-lg bg-black/40 border border-white/5 p-3">
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-zinc-500">
-        <Icon size={12} /> {label}
+    <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-[#64748B] font-mono font-medium">
+        <Icon size={12} className="text-[#64748B]" /> {label}
       </div>
-      <div className={`mt-1 text-sm font-medium ${accent ? "text-amber-400" : "text-white"}`}>
-        {value || <span className="italic text-zinc-500">Data unavailable</span>}
+      <div className={`mt-1 text-sm font-medium ${accent ? "text-[#EA580C] font-semibold" : "text-[#12304A]"}`}>
+        {value || <span className="italic text-[#94A3B8] font-normal">Data unavailable</span>}
       </div>
     </div>
   );
