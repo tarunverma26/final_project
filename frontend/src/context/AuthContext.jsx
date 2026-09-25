@@ -14,7 +14,18 @@ export function AuthProvider({ children }) {
       const { data } = await api.get("/auth/me");
       setUser(data);
     } catch {
+      const sandboxUser = localStorage.getItem("rw_sandbox_user");
+      if (sandboxUser) {
+        try {
+          setUser(JSON.parse(sandboxUser));
+          setLoading(false);
+          return;
+        } catch {
+          // ignore
+        }
+      }
       localStorage.removeItem("rw_token");
+      localStorage.removeItem("rw_sandbox_user");
       setUser(null);
     }
     setLoading(false);
@@ -24,12 +35,14 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password, role = "user") => {
     const { data } = await api.post("/auth/login", { email, password, role });
+    localStorage.removeItem("rw_sandbox_user");
     localStorage.setItem("rw_token", data.token);
     setUser(data.user);
     return data.user;
   };
   const register = async (email, password, name) => {
     const { data } = await api.post("/auth/register", { email, password, name });
+    localStorage.removeItem("rw_sandbox_user");
     localStorage.setItem("rw_token", data.token);
     setUser(data.user);
     return data.user;
@@ -42,14 +55,26 @@ export function AuthProvider({ children }) {
       authority,
       invite_code,
     });
+    localStorage.removeItem("rw_sandbox_user");
     localStorage.setItem("rw_token", data.token);
     setUser(data.user);
     return data.user;
   };
-  const logout = () => { localStorage.removeItem("rw_token"); setUser(null); };
+  const loginSandbox = (sandboxUser) => {
+    const fakeToken = "mock_jwt_sandbox_admin_session_" + Date.now();
+    localStorage.setItem("rw_token", fakeToken);
+    localStorage.setItem("rw_sandbox_user", JSON.stringify(sandboxUser));
+    setUser(sandboxUser);
+    return sandboxUser;
+  };
+  const logout = () => {
+    localStorage.removeItem("rw_token");
+    localStorage.removeItem("rw_sandbox_user");
+    setUser(null);
+  };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, registerAdmin, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, registerAdmin, loginSandbox, logout }}>
       {children}
     </AuthContext.Provider>
   );
