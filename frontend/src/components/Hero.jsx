@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Eyebrow from "./Eyebrow";
 import Reveal from "./Reveal";
 import WeatherAtmosphere from "./WeatherAtmosphere";
+import HeroAtmosphere from "./HeroAtmosphere";
 import Pothole from "./Pothole";
 import Counter from "./Counter";
 import { api } from "@/lib/api";
@@ -70,16 +71,8 @@ export default function Hero() {
         />
       </div>
 
-      {/* 3. Subtle Weather Atmosphere (fine diagonal rain streaks primarily over the road/sunbeams on right) */}
-      <div
-        className="absolute inset-0 pointer-events-none z-1 overflow-hidden"
-        style={{
-          maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 30%, rgba(0,0,0,0.9) 65%, rgba(0,0,0,1) 100%)",
-          WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 30%, rgba(0,0,0,0.9) 65%, rgba(0,0,0,1) 100%)",
-        }}
-      >
-        <WeatherAtmosphere rainCount={22} showClouds={false} showSun={false} showSkyGradient={false} />
-      </div>
+      {/* 3. Recreated In-Browser Atmosphere: God-Rays, Canvas Rain, Puddle Shimmer & Bokeh */}
+      <HeroAtmosphere />
 
       {/* 4. Subtle Civic Map Grid & Road Lines */}
       <div className="absolute inset-0 pointer-events-none select-none overflow-hidden opacity-20 z-1">
