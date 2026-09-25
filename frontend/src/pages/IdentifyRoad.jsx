@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import DarkMap from "@/components/DarkMap";
@@ -8,7 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import {
   Crosshair, MapPin, Buildings, Warning, ArrowSquareOut,
-  PencilSimple, CheckCircle, X, CircleNotch
+  PencilSimple, CheckCircle, X, CircleNotch, Gauge, ArrowRight, WarningOctagon
 } from "@phosphor-icons/react";
 
 export default function IdentifyRoad() {
@@ -272,13 +273,53 @@ export default function IdentifyRoad() {
                   <Field icon={Buildings} label="Last Maintenance" value={info.last_maintenance} />
                 </div>
 
+                {/* PCI Condition Score & Pending Complaints Telemetry */}
+                <div className="mt-5 p-4 rounded-xl bg-orange-50/60 border border-orange-200/80">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Gauge size={18} className="text-[#EA580C]" weight="bold" />
+                      <span className="text-xs font-mono font-bold text-[#EA580C] uppercase tracking-wider">
+                        PCI PAVEMENT CONDITION SCORE
+                      </span>
+                    </div>
+                    <span className="font-mono font-black text-base text-[#EA580C]">
+                      68 / 100
+                    </span>
+                  </div>
+                  <div className="mt-2 h-2 rounded-full bg-orange-200/60 overflow-hidden">
+                    <div className="h-full bg-[#EA580C] rounded-full" style={{ width: "68%" }} />
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-xs text-[#64748B] font-mono">
+                    <span>Pending: <strong className="text-red-600">18 Active</strong></span>
+                    <span>Resolved: <strong className="text-emerald-700">342 Fixed</strong></span>
+                    <span>SLA: <strong className="text-[#12304A]">94% On-Time</strong></span>
+                  </div>
+                </div>
+
+                <div className="mt-5 flex flex-wrap gap-2.5">
+                  <Link
+                    to={`/road/${info.road_number || "NH-48"}`}
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-[#12304A] hover:bg-[#0A1D2E] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition"
+                  >
+                    <span>View Road Profile & Public Audit</span>
+                    <ArrowRight size={14} weight="bold" />
+                  </Link>
+                  <Link
+                    to={`/report?road=${encodeURIComponent(info.road_name || "")}`}
+                    className="py-2.5 px-4 rounded-xl bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition"
+                  >
+                    <WarningOctagon size={14} weight="bold" />
+                    <span>Report Issue</span>
+                  </Link>
+                </div>
+
                 {loc && (
                   <a
                     href={`https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=18/${loc.lat}/${loc.lng}`}
                     target="_blank"
                     rel="noreferrer"
                     data-testid="identify-osm-link"
-                    className="mt-5 inline-flex items-center gap-1.5 text-xs text-[#EA580C] hover:text-[#C2410C] font-mono font-semibold"
+                    className="mt-4 inline-flex items-center gap-1.5 text-xs text-[#EA580C] hover:text-[#C2410C] font-mono font-semibold"
                   >
                     Open on OpenStreetMap <ArrowSquareOut size={12} />
                   </a>

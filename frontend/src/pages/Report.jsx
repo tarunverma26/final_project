@@ -12,18 +12,17 @@ import {
 
 const CATEGORIES = [
   { id: "Pothole", icon: Warning },
-  { id: "Damaged Road", icon: Path },
-  { id: "Cracks", icon: Path },
+  { id: "Broken Pavement", icon: Path },
   { id: "Waterlogging", icon: Drop },
-  { id: "Drainage", icon: Drop },
-  { id: "Streetlight", icon: Lightbulb },
-  { id: "Sign", icon: TrafficSign },
-  { id: "Divider", icon: Divide },
-  { id: "Traffic Obstruction", icon: Barricade },
-  { id: "Other", icon: Question },
+  { id: "Streetlight Issue", icon: Lightbulb },
+  { id: "Missing Signage", icon: TrafficSign },
+  { id: "Road Construction Delay", icon: Barricade },
+  { id: "Cracks & Drainage", icon: Path },
+  { id: "Divider Damage", icon: Divide },
+  { id: "Other Hazard", icon: Question },
 ];
 
-const SEVERITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
+const SEVERITIES = ["LOW", "MEDIUM", "HIGH", "DANGEROUS"];
 
 export default function Report() {
   const { user } = useAuth();
@@ -236,20 +235,86 @@ export default function Report() {
                 </div>
               ) : (
                 <motion.div
-                  key="placeholder"
+                  key="simulated-ai"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="rounded-2xl border border-[#E2E8F0] bg-white shadow-sm p-8 h-full min-h-[350px] flex flex-col items-center justify-center text-center"
+                  className="rounded-2xl border border-teal-200/80 bg-white shadow-sm p-6 space-y-4"
+                  data-testid="ai-pre-assessment-simulation"
                 >
-                  <div className="w-14 h-14 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center mb-4">
-                    <Wrench size={30} className="text-[#0F766E]" weight="duotone" />
+                  <div className="flex items-center justify-between pb-3 border-b border-teal-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center text-[#0F766E]">
+                        <Wrench size={18} weight="duotone" />
+                      </div>
+                      <div>
+                        <div className="text-[11px] font-mono font-bold text-[#0F766E] uppercase">
+                          INSTANT AI PRE-ASSESSMENT
+                        </div>
+                        <div className="text-[10px] font-mono text-[#64748B]">
+                          SIMULATED NEURAL SCAN · CIVICVISION-V2.4
+                        </div>
+                      </div>
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-teal-50 text-[#0F766E] border border-teal-200">
+                      LIVE PREVIEW
+                    </span>
                   </div>
-                  <div className="font-display font-bold text-lg text-[#12304A]">AI Vision Telemetry</div>
-                  <p className="text-sm text-[#64748B] mt-2 max-w-xs leading-relaxed">
-                    Upload a photo and our multi-stage vision model calculates depth, severity, hazardous impact, and SLA response tier in real time.
-                  </p>
-                  <div className="mt-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-[11px] font-mono text-[#64748B]">
-                    <span className="w-2 h-2 rounded-full bg-teal-500" /> SIH Automated Audit Ready
+
+                  {preview ? (
+                    <div className="relative rounded-xl overflow-hidden h-40 bg-slate-100 border border-[#E2E8F0]">
+                      <img src={preview} alt="damage analysis" className="w-full h-full object-cover" />
+                      <div className="scan-line" />
+                      <div className="absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-slate-900/80 text-teal-300 border border-teal-500/40">
+                        OPTICAL SCAN ACTIVE
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center">
+                      <p className="text-xs text-[#64748B]">
+                        Attach a photo for optical crater depth estimation, or review telemetry generated from category & severity.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <span className="text-[10px] font-mono text-[#64748B] uppercase block font-semibold">Estimated Depth</span>
+                      <strong className="text-sm font-mono text-[#12304A]">
+                        {category === "Pothole" ? "~12 cm" : category === "Waterlogging" ? "~24 cm puddle" : "~4.5 cm depression"}
+                      </strong>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <span className="text-[10px] font-mono text-[#64748B] uppercase block font-semibold">Risk to Two-Wheelers</span>
+                      <strong className={`text-sm font-mono ${severity === "DANGEROUS" || severity === "HIGH" ? "text-red-600" : "text-amber-600"}`}>
+                        {severity === "DANGEROUS" ? "CRITICAL (Lethal)" : severity === "HIGH" ? "HIGH (Severe Hazard)" : "MODERATE"}
+                      </strong>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <span className="text-[10px] font-mono text-[#64748B] uppercase block font-semibold">Automated SLA</span>
+                      <strong className="text-sm font-mono text-[#F97316]">
+                        {severity === "DANGEROUS" ? "24-Hr Urgent" : severity === "HIGH" ? "48-Hr Standard" : "5-Day Routine"}
+                      </strong>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <span className="text-[10px] font-mono text-[#64748B] uppercase block font-semibold">AI Confidence</span>
+                      <strong className="text-sm font-mono text-emerald-600">
+                        96.4% Verified
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-orange-50/60 border border-orange-200 text-xs text-[#12304A]">
+                    <strong>AI Recommendation: </strong>
+                    <span className="text-[#475569]">
+                      {category === "Pothole"
+                        ? "Immediate cold-mix asphalt patching and roller compaction recommended."
+                        : category === "Waterlogging"
+                        ? "Clear clogged culverts and verify stormwater catch basin flow."
+                        : "Field inspection crew dispatch and safety barricade installation."}
+                    </span>
                   </div>
                 </motion.div>
               )}

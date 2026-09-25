@@ -239,3 +239,68 @@ h1, h2, h3, h4, .font-display {
 
 /* Selection */
 ::selection { background: #FFEDD5; color: #12304A; }
+
+/* ==========================================================================
+   ROADWATCH CINEMATIC ROAD JOURNEY DESIGN SYSTEM
+   Dark asphalt / charcoal base with floating glassmorphism cards
+   High-visibility safety accents: safety yellow, neon orange, reflective green
+   ========================================================================== */
+.road-journey-theme {
+    background-color: transparent !important;
+    color: #F8FAFC !important;
+    position: relative;
+}
+
+.road-journey-theme section:not(#hero) {
+    background-color: rgba(7, 13, 23, 0.76) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.4) !important;
+    color: #F1F5F9;
+}
+
+.road-journey-theme .bg-white {
+    background-color: rgba(13, 23, 39, 0.88) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #F8FAFC !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+}
+
+.road-journey-theme .bg-\[\#F8FAFC\],
+.road-journey-theme .bg-slate-50,
+.road-journey-theme .bg-\[\#F1F5F9\] {
+    background-color: rgba(9, 16, 28, 0.75) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.road-journey-theme h1,
+.road-journey-theme h2,
+.road-journey-theme h3,
+.road-journey-theme h4,
+.road-journey-theme .font-display,
+.road-journey-theme .text-\[\#12304A\] {
+    color: #FFFFFF !important;
+}
+
+.road-journey-theme p,
+.road-journey-theme .text-\[\#64748B\],
+.road-journey-theme .text-\[\#475569\],
+.road-journey-theme .text-slate-600 {
+    color: #CBD5E1 !important;
+}
+
+.road-journey-theme .border-\[\#E2E8F0\],
+.road-journey-theme .border-\[\#CBD5E1\],
+.road-journey-theme .border-\[\#F1F5F9\] {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.road-journey-theme footer {
+    background-color: rgba(5, 9, 16, 0.94) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #94A3B8 !important;
+}
+

@@ -131,25 +131,41 @@ export default function Hero() {
               <span className="text-[#F97316] drop-shadow-sm">WE MAKE IT VISIBLE.</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-slate-200 max-w-2xl leading-relaxed font-normal drop-shadow-sm">
-              Identify roads. Report problems. Track repairs — end to end, in the open.
+              Identify roads. Report problems. Track repairs. Hold the road system accountable.
             </p>
 
-            <div className="mt-9 flex flex-wrap items-center gap-3.5">
+            <div className="mt-9 flex flex-wrap items-center gap-3">
               <Link
                 to="/identify"
                 data-testid="hero-identify-btn"
-                className="px-6 py-3.5 rounded-xl bg-[#F97316] hover:bg-[#EA580C] text-white font-semibold transition-all duration-150 inline-flex items-center gap-2.5 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                className="px-5 py-3 rounded-xl bg-[#F97316] hover:bg-[#EA580C] text-white font-semibold transition-all duration-150 inline-flex items-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5 text-sm"
               >
-                <Radar size={19} weight="bold" />
-                <span>Identify My Road</span>
+                <Radar size={18} weight="bold" />
+                <span>Identify This Road</span>
               </Link>
               <Link
                 to="/report"
                 data-testid="hero-report-btn"
-                className="px-6 py-3.5 rounded-xl bg-white/95 hover:bg-white text-[#12304A] border border-white/60 hover:border-[#F97316] font-semibold transition-all duration-150 inline-flex items-center gap-2.5 shadow-md hover:-translate-y-0.5 backdrop-blur-xs"
+                className="px-5 py-3 rounded-xl bg-white/95 hover:bg-white text-[#12304A] border border-white/60 hover:border-[#F97316] font-semibold transition-all duration-150 inline-flex items-center gap-2 shadow-md hover:-translate-y-0.5 backdrop-blur-xs text-sm"
               >
-                <WarningOctagon size={19} weight="bold" className="text-[#F97316]" />
-                <span>Report a Pothole</span>
+                <WarningOctagon size={18} weight="bold" className="text-[#F97316]" />
+                <span>Report a Pothole / Issue</span>
+              </Link>
+              <Link
+                to="/tracking/RW-10234"
+                data-testid="hero-track-btn"
+                className="px-5 py-3 rounded-xl bg-slate-900/80 hover:bg-slate-900 text-slate-100 border border-slate-700 hover:border-amber-400 font-semibold transition-all duration-150 inline-flex items-center gap-2 shadow-md hover:-translate-y-0.5 backdrop-blur-xs text-sm"
+              >
+                <ShieldCheck size={18} weight="bold" className="text-amber-400" />
+                <span>Track Complaint</span>
+              </Link>
+              <Link
+                to="/road/NH-48"
+                data-testid="hero-authority-btn"
+                className="px-5 py-3 rounded-xl bg-slate-900/80 hover:bg-slate-900 text-slate-100 border border-slate-700 hover:border-teal-400 font-semibold transition-all duration-150 inline-flex items-center gap-2 shadow-md hover:-translate-y-0.5 backdrop-blur-xs text-sm"
+              >
+                <Buildings size={18} weight="bold" className="text-teal-400" />
+                <span>View Road Authority Info</span>
               </Link>
             </div>
           </div>
@@ -175,16 +191,13 @@ export default function Hero() {
                 <Counter end={stats.total_problems} />
               </div>
               <div className="text-xs text-[#64748B] mt-1.5 flex items-center gap-1">
-                <span>Verified across municipal sectors</span>
+                <span>Road problems reported</span>
               </div>
             </div>
 
-            {/* Center: Daytime Interactive Pothole Sensor Visual */}
+            {/* Center: Interactive Animated Pothole near foreground */}
             <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-900/50 backdrop-blur-md border border-white/10 shadow-lg">
-              <Pothole size={210} label="Simulated Hazard Sensor — PWD Zone 2" />
-              <span className="text-[11px] font-mono text-slate-300 mt-2">
-                Hover to trigger AI optical scan
-              </span>
+              <Pothole size={210} label="Pothole detected" severity="High" />
             </div>
 
             {/* Stat Card 3: Resolved / In Progress */}

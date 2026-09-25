@@ -13,6 +13,8 @@ import MapView from "@/pages/MapView";
 import Dashboard from "@/pages/Dashboard";
 import Contractors from "@/pages/Contractors";
 import Info from "@/pages/Info";
+import RoadProfile from "@/pages/RoadProfile";
+import PrototypeJourneyBar from "@/components/PrototypeJourneyBar";
 
 import AdminRegister from "@/pages/AdminRegister";
 import AdminLogin from "@/pages/AdminLogin";
@@ -43,10 +45,12 @@ function AppRoutes() {
       <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
       <Route path="/identify" element={<IdentifyRoad />} />
       <Route path="/report" element={<Report />} />
+      <Route path="/road/:id" element={<RoadProfile />} />
+      <Route path="/road" element={<RoadProfile />} />
       <Route path="/map" element={<MapView />} />
       <Route path="/events" element={<Info mode="events" />} />
       <Route path="/contractors" element={<Contractors />} />
-      <Route path="/tracking/:id" element={<Protected><Tracking /></Protected>} />
+      <Route path="/tracking/:id" element={<Tracking />} />
       <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
       <Route path="/admin/dashboard" element={<AdminProtected><AdminDashboard /></AdminProtected>} />
       <Route path="*" element={<Navigate to="/" replace />} />
@@ -62,6 +66,7 @@ export default function App() {
         <AuthProvider>
           <AppRoutes />
           <Toaster theme="dark" position="top-right" />
+          <PrototypeJourneyBar />
         </AuthProvider>
       </BrowserRouter>
     </div>

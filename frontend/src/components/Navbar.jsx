@@ -21,6 +21,7 @@ import {
 
 const links = [
   { to: "/identify", label: "Identify Road", icon: Radar },
+  { to: "/road/NH-48", label: "Road Profile", icon: Path },
   { to: "/report", label: "Report", icon: Article },
   { to: "/map", label: "Map", icon: MapTrifold },
   { to: "/events", label: "Events", icon: Calendar },

@@ -13,15 +13,20 @@ import DashboardSection from "@/components/DashboardSection";
 import GlobalStyle from "@/GlobalStyle";
 import { Link } from "react-router-dom";
 import WeatherAtmosphere from "@/components/WeatherAtmosphere";
+import RoadJourneyCanvas from "@/components/RoadJourneyCanvas";
 import { ArrowRight, MapTrifold, Sparkle } from "@phosphor-icons/react";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] relative">
+    <div className="min-h-screen road-journey-theme relative">
       <GlobalStyle />
-      <Navbar />
+      {/* 60FPS Living Animated Road Canvas Background */}
+      <RoadJourneyCanvas />
 
-      <main>
+      <div className="relative z-10">
+        <Navbar />
+
+        <main>
         {/* Hero Section */}
         <Hero />
 
@@ -109,6 +114,7 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 }
