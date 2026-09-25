@@ -95,24 +95,27 @@ export default function Navbar() {
   };
 
   const isActive = (path) => location.pathname === path;
+  const isHeroNav = location.pathname === "/" && !scrolled;
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 border-b ${
         scrolled
           ? "bg-white/95 backdrop-blur-md border-[#E2E8F0] shadow-sm py-2.5"
+          : isHeroNav
+          ? "bg-[#081120]/75 backdrop-blur-md border-white/10 py-3.5"
           : "bg-white border-[#E2E8F0] py-3.5"
       }`}
       data-testid="main-navbar"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6">
-        {/* Brand Logo: ROAD in Navy #12304A, WATCH in Orange #F97316 */}
+        {/* Brand Logo: ROAD in White/Navy, WATCH in Orange #F97316 */}
         <Link to="/" className="flex items-center gap-2.5 group" data-testid="nav-logo">
           <div className="w-8 h-8 rounded-lg bg-[#F97316] flex items-center justify-center shadow-xs transition-transform group-hover:scale-105">
             <Radar size={18} weight="bold" className="text-white" />
           </div>
           <span className="font-display font-extrabold tracking-tight text-xl">
-            <span className="text-[#12304A]">ROAD</span>
+            <span className={isHeroNav ? "text-white" : "text-[#12304A]"}>ROAD</span>
             <span className="text-[#F97316]">WATCH</span>
           </span>
         </Link>
@@ -128,14 +131,18 @@ export default function Navbar() {
                 data-testid={`nav-${label.toLowerCase().replace(/\s+/g, "-")}`}
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
                   active
-                    ? "text-[#F97316] bg-orange-50 font-semibold"
+                    ? isHeroNav
+                      ? "text-[#F97316] bg-orange-500/20 border border-orange-500/30 font-semibold"
+                      : "text-[#F97316] bg-orange-50 font-semibold"
+                    : isHeroNav
+                    ? "text-slate-200 hover:text-white hover:bg-white/10"
                     : "text-[#64748B] hover:text-[#12304A] hover:bg-slate-50"
                 }`}
               >
                 <Icon
                   size={16}
                   weight={active ? "bold" : "duotone"}
-                  className={active ? "text-[#F97316]" : "text-[#64748B]"}
+                  className={active ? "text-[#F97316]" : isHeroNav ? "text-slate-300" : "text-[#64748B]"}
                 />
                 {label}
               </Link>
@@ -149,15 +156,19 @@ export default function Navbar() {
               data-testid="nav-smart-layer-btn"
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
                 smartOpen
-                  ? "bg-teal-50 text-[#0F766E] border border-teal-200"
+                  ? isHeroNav
+                    ? "bg-teal-950/80 text-teal-200 border border-teal-500/40"
+                    : "bg-teal-50 text-[#0F766E] border border-teal-200"
+                  : isHeroNav
+                  ? "text-teal-300 hover:bg-white/10"
                   : "text-[#0F766E] hover:bg-teal-50/70"
               }`}
             >
-              <Sparkle size={15} weight="fill" className="text-[#0F766E]" />
+              <Sparkle size={15} weight="fill" className={isHeroNav ? "text-teal-300" : "text-[#0F766E]"} />
               <span>Smart Layer</span>
               <CaretDown
                 size={12}
-                className={`transition-transform duration-200 text-[#0F766E] ${
+                className={`transition-transform duration-200 ${isHeroNav ? "text-teal-300" : "text-[#0F766E]"} ${
                   smartOpen ? "rotate-180" : ""
                 }`}
               />
@@ -206,7 +217,11 @@ export default function Navbar() {
                 <Link
                   to="/admin/dashboard"
                   data-testid="nav-admin-dashboard-btn"
-                  className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-[#12304A] text-xs font-mono font-semibold flex items-center gap-1.5 border border-[#E2E8F0] transition"
+                  className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold flex items-center gap-1.5 border transition ${
+                    isHeroNav
+                      ? "bg-white/10 hover:bg-white/20 text-white border-white/20"
+                      : "bg-slate-100 hover:bg-slate-200 text-[#12304A] border-[#E2E8F0]"
+                  }`}
                 >
                   <ShieldCheck size={14} weight="bold" className="text-[#0F766E]" />
                   <span>{user.authority || "Admin Portal"}</span>
@@ -215,7 +230,11 @@ export default function Navbar() {
               <Link
                 to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}
                 data-testid="nav-dashboard-btn"
-                className="text-sm font-semibold px-3 py-1.5 rounded-lg text-[#12304A] hover:bg-slate-100 transition-colors"
+                className={`text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+                  isHeroNav
+                    ? "text-white hover:bg-white/10"
+                    : "text-[#12304A] hover:bg-slate-100"
+                }`}
               >
                 {user.name.split(" ")[0]}
               </Link>
@@ -226,7 +245,11 @@ export default function Navbar() {
                   nav("/");
                 }}
                 data-testid="nav-logout-btn"
-                className="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-[#64748B] hover:text-[#0F172A] flex items-center gap-1.5 border border-[#E2E8F0] transition-colors cursor-pointer"
+                className={`text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-1.5 border transition-colors cursor-pointer ${
+                  isHeroNav
+                    ? "bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white border-white/20"
+                    : "bg-slate-100 hover:bg-slate-200 text-[#64748B] hover:text-[#0F172A] border-[#E2E8F0]"
+                }`}
               >
                 <SignOut size={14} /> Logout
               </button>
@@ -245,7 +268,11 @@ export default function Navbar() {
           <button
             onClick={() => setOpen((v) => !v)}
             data-testid="nav-mobile-toggle"
-            className="md:hidden ml-1 p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-[#12304A] border border-[#E2E8F0]"
+            className={`md:hidden ml-1 p-2 rounded-lg border transition-colors ${
+              isHeroNav
+                ? "bg-white/10 hover:bg-white/20 text-white border-white/20"
+                : "bg-slate-100 hover:bg-slate-200 text-[#12304A] border-[#E2E8F0]"
+            }`}
             aria-label="Toggle navigation"
           >
             {open ? <X size={18} /> : <List size={18} />}
