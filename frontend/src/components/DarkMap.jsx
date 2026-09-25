@@ -48,9 +48,10 @@ export default function DarkMap({
     >
       <MapContainer center={center} zoom={zoom} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
         <TileLayer
-          attribution='&copy; OpenStreetMap contributors &copy; CARTO'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
         {onPick && <ClickHandler onPick={onPick} />}
         {pickedMarker && (
           <Marker position={[pickedMarker.lat, pickedMarker.lng]} icon={iconCritical}>

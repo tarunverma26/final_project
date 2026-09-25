@@ -34,13 +34,26 @@ export function AuthProvider({ children }) {
     setUser(data.user);
     return data.user;
   };
+  const registerAdmin = async ({ email, password, name, authority, invite_code }) => {
+    const { data } = await api.post("/auth/admin/register", {
+      email,
+      password,
+      name,
+      authority,
+      invite_code,
+    });
+    localStorage.setItem("rw_token", data.token);
+    setUser(data.user);
+    return data.user;
+  };
   const logout = () => { localStorage.removeItem("rw_token"); setUser(null); };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, registerAdmin, logout }}>
       {children}
     </AuthContext.Provider>
   );
+
 }
 
 export const useAuth = () => useContext(AuthContext);

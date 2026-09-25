@@ -14,10 +14,20 @@ import Dashboard from "@/pages/Dashboard";
 import Contractors from "@/pages/Contractors";
 import Info from "@/pages/Info";
 
+import AdminRegister from "@/pages/AdminRegister";
+import AdminDashboard from "@/pages/AdminDashboard";
+
 function Protected({ children }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen asphalt-bg" />;
   if (!user) return <Navigate to="/login" replace />;
+  return children;
+}
+
+function AdminProtected({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen asphalt-bg" />;
+  if (!user || user.role !== "admin") return <Navigate to="/login" replace />;
   return children;
 }
 
@@ -27,6 +37,7 @@ function AppRoutes() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/admin/register" element={<AdminRegister />} />
       <Route path="/identify" element={<IdentifyRoad />} />
       <Route path="/report" element={<Report />} />
       <Route path="/map" element={<MapView />} />
@@ -34,10 +45,12 @@ function AppRoutes() {
       <Route path="/contractors" element={<Contractors />} />
       <Route path="/tracking/:id" element={<Protected><Tracking /></Protected>} />
       <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+      <Route path="/admin/dashboard" element={<AdminProtected><AdminDashboard /></AdminProtected>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
+
 
 export default function App() {
   return (

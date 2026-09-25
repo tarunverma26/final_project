@@ -95,7 +95,21 @@ export default function Contractors() {
         )}
 
         {loading ? (
-          <div className="mt-10 text-zinc-500">Loading scorecards...</div>
+          <div className="mt-8 grid md:grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-2xl bg-[#111] border border-white/5 p-6 animate-pulse space-y-4">
+                <div className="flex gap-4 items-center">
+                  <div className="w-20 h-20 rounded-full bg-zinc-800" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-zinc-800 rounded w-1/3" />
+                    <div className="h-6 bg-zinc-800 rounded w-3/4" />
+                    <div className="h-3 bg-zinc-800/60 rounded w-1/2" />
+                  </div>
+                </div>
+                <div className="h-10 bg-zinc-800/30 rounded mt-4" />
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="mt-8 grid md:grid-cols-2 gap-4" data-testid="contractors-grid">
             {items.map((c, i) => (

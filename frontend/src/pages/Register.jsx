@@ -33,18 +33,18 @@ export default function Register() {
         <h1 className="font-display font-black text-3xl mt-1">Join ROADWATCH</h1>
 
         <label className="block mt-6 text-xs text-zinc-400 font-mono">NAME</label>
-        <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
+        <input required value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (err) setErr(""); }}
           data-testid="register-name"
           className="mt-1 w-full rounded-lg bg-black/60 border border-white/10 px-4 py-3 focus:outline-none focus:border-amber-500/60" />
 
         <label className="block mt-4 text-xs text-zinc-400 font-mono">EMAIL</label>
-        <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
+        <input required type="email" value={form.email} onChange={(e) => { setForm({ ...form, email: e.target.value }); if (err) setErr(""); }}
           data-testid="register-email"
           className="mt-1 w-full rounded-lg bg-black/60 border border-white/10 px-4 py-3 focus:outline-none focus:border-amber-500/60" />
 
         <label className="block mt-4 text-xs text-zinc-400 font-mono">PASSWORD</label>
         <input required type="password" minLength={6} value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          onChange={(e) => { setForm({ ...form, password: e.target.value }); if (err) setErr(""); }}
           data-testid="register-password"
           className="mt-1 w-full rounded-lg bg-black/60 border border-white/10 px-4 py-3 focus:outline-none focus:border-amber-500/60" />
 

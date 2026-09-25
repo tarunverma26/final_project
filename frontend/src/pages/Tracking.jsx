@@ -60,7 +60,18 @@ export default function Tracking() {
         <div className="text-xs font-mono text-zinc-500 mt-2" data-testid="tracking-id">ID: {id}</div>
 
         {!report ? (
-          <div className="mt-10 text-zinc-500">Loading...</div>
+          <div className="grid lg:grid-cols-2 gap-6 mt-10 animate-pulse">
+            <div className="rounded-2xl bg-[#111] border border-white/5 p-6 space-y-4">
+              <div className="h-4 bg-zinc-800 rounded w-1/4" />
+              <div className="h-8 bg-zinc-800 rounded w-2/3" />
+              <div className="h-4 bg-zinc-800/60 rounded w-1/2" />
+              <div className="h-40 bg-zinc-800/30 rounded-lg mt-4" />
+            </div>
+            <div className="rounded-2xl bg-[#111] border border-white/5 p-6 space-y-4">
+              <div className="h-4 bg-zinc-800 rounded w-1/3" />
+              <div className="h-32 bg-zinc-800/40 rounded-lg" />
+            </div>
+          </div>
         ) : (
           <div className="grid lg:grid-cols-2 gap-6 mt-10">
             <div className="rounded-2xl bg-[#111] border border-white/5 p-6">

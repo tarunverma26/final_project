@@ -1,46 +1,146 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import DarkMap from "@/components/DarkMap";
 import RainLayer from "@/components/RainLayer";
 import AuthorityConfirmCard from "@/components/AuthorityConfirmCard";
+import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
-import { Crosshair, MapPin, Buildings, Warning, ArrowSquareOut } from "@phosphor-icons/react";
+import {
+  Crosshair, MapPin, Buildings, Warning, ArrowSquareOut,
+  PencilSimple, CheckCircle, X, CircleNotch
+} from "@phosphor-icons/react";
 
 export default function IdentifyRoad() {
-  const [loc, setLoc] = useState({ lat: 28.4595, lng: 77.0266 });
+  const { user } = useAuth();
+  const [loc, setLoc] = useState(null);
   const [info, setInfo] = useState(null);
+  const [gettingLocation, setGettingLocation] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [err, setErr] = useState("");
 
+  // Road overlay edit modal states
+  const [isEditing, setIsEditing] = useState(false);
+  const [savingOverlay, setSavingOverlay] = useState(false);
+  const [editSuccess, setEditSuccess] = useState("");
+  const [editForm, setEditForm] = useState({
+    road_name: "",
+    road_number: "",
+    authority: "",
+    contractor: "",
+    surface: "",
+    maxspeed: "",
+    lanes: "",
+    construction_year: "",
+    last_maintenance: "",
+  });
+
   const lookup = async (lat, lng) => {
-    setScanning(true); setErr(""); setInfo(null);
+    setScanning(true);
+    setErr("");
+    setInfo(null);
     try {
       const { data } = await api.get("/roads/identify", { params: { lat, lng } });
-      setTimeout(() => { setInfo(data); setScanning(false); }, 1200);
+      setTimeout(() => {
+        setInfo(data);
+        setScanning(false);
+      }, 900);
     } catch (e) {
-      setErr("Unable to identify road. Try again."); setScanning(false);
+      setErr("Unable to identify road. Try dropping a pin again.");
+      setScanning(false);
     }
   };
 
-  const useGps = async () => {
-    let { lat, lng } = loc;
-    if (navigator.geolocation) {
-      await new Promise((resolve) => {
-        navigator.geolocation.getCurrentPosition(
-          (p) => { lat = p.coords.latitude; lng = p.coords.longitude; setLoc({ lat, lng }); resolve(); },
-          () => resolve(),
-          { timeout: 5000, enableHighAccuracy: true }
-        );
-      });
+  const useGps = () => {
+    if (!navigator.geolocation) {
+      setErr("Geolocation is not supported by your browser. Please drop a pin on the map.");
+      return;
     }
-    await lookup(lat, lng);
+
+    setGettingLocation(true);
+    setErr("");
+    setInfo(null);
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        setGettingLocation(false);
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setLoc({ lat, lng });
+        await lookup(lat, lng);
+      },
+      (error) => {
+        setGettingLocation(false);
+        let msg = "Could not acquire GPS position. Please drop a pin on the map.";
+        if (error.code === 1) {
+          msg = "Location permission denied. Please allow location access or click the map.";
+        } else if (error.code === 2) {
+          msg = "Position unavailable. Please click anywhere on the map to select your road.";
+        } else if (error.code === 3) {
+          msg = "Location request timed out. Please try again or drop a pin on the map.";
+        }
+        setErr(msg);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
   };
 
   const onMapPick = async ({ lat, lng }) => {
     setLoc({ lat, lng });
     await lookup(lat, lng);
   };
+
+  const openEditModal = () => {
+    if (!info) return;
+    setEditForm({
+      road_name: info.road_name || "",
+      road_number: info.road_number || "",
+      authority: info.authority || (user?.authority || ""),
+      contractor: info.contractor || "",
+      surface: info.surface || "",
+      maxspeed: info.maxspeed || "",
+      lanes: info.lanes || "",
+      construction_year: info.construction_year || "",
+      last_maintenance: info.last_maintenance || "",
+    });
+    setEditSuccess("");
+    setIsEditing(true);
+  };
+
+  const saveOverlay = async (e) => {
+    e.preventDefault();
+    if (!info) return;
+    setSavingOverlay(true);
+    setErr("");
+    try {
+      const osmId = info.osm_id || info.segment_key || "unknown";
+      const { data } = await api.put(`/roads/overlay/${osmId}`, editForm);
+      setInfo((prev) => ({
+        ...prev,
+        ...data,
+        has_overlay: true,
+      }));
+      setEditSuccess("Road profile overlay updated successfully!");
+      setTimeout(() => {
+        setIsEditing(false);
+        setEditSuccess("");
+      }, 1000);
+    } catch (err) {
+      setErr(err.response?.data?.detail || "Failed to update road overlay.");
+    } finally {
+      setSavingOverlay(false);
+    }
+  };
+
+  // Admin authority check: Admin can only edit roads under their own authority
+  const isAdmin = user && user.role === "admin";
+  const canEditRoad =
+    isAdmin &&
+    (!user?.authority || !info?.authority || user.authority === info.authority);
 
   return (
     <div className="asphalt-bg min-h-screen">
@@ -50,52 +150,110 @@ export default function IdentifyRoad() {
         <p className="text-[11px] tracking-widest text-amber-400 font-mono">/ IDENTIFY</p>
         <h1 className="font-display font-black text-4xl md:text-6xl mt-2">Which road are you on?</h1>
         <p className="text-zinc-400 mt-3 max-w-xl">
-          Use GPS or click anywhere on the map — we resolve the actual road name, authority and OSM tags in real time.
+          Use GPS or click anywhere on the map — we resolve the actual road name, authority, and infrastructure specifications in real time.
         </p>
 
         <div className="grid lg:grid-cols-2 gap-8 mt-10">
           <div>
             <div className="rounded-2xl bg-[#111] border border-white/5 p-6">
               <div className="flex items-center gap-3">
-                <div className={scanning ? "gps-pulse" : "w-5 h-5 bg-amber-500 rounded-full"} />
+                <div
+                  className={
+                    gettingLocation || scanning
+                      ? "gps-pulse"
+                      : loc
+                      ? "w-5 h-5 bg-emerald-500 rounded-full"
+                      : "w-5 h-5 bg-amber-500/50 rounded-full"
+                  }
+                />
                 <div>
                   <div className="text-xs font-mono text-zinc-500">GPS COORDINATES</div>
-                  <div className="font-mono text-amber-400" data-testid="identify-coords">
-                    {loc.lat.toFixed(5)}° N, {loc.lng.toFixed(5)}° E
+                  <div className="font-mono text-amber-400 text-sm md:text-base" data-testid="identify-coords">
+                    {gettingLocation ? (
+                      <span className="text-amber-300 animate-pulse flex items-center gap-1.5">
+                        <CircleNotch className="animate-spin" size={16} /> Acquiring live GPS fix...
+                      </span>
+                    ) : loc ? (
+                      `${loc.lat.toFixed(5)}° N, ${loc.lng.toFixed(5)}° E`
+                    ) : (
+                      <span className="text-zinc-500 italic">No coordinates selected yet</span>
+                    )}
                   </div>
                 </div>
               </div>
 
               <button
                 onClick={useGps}
-                disabled={scanning}
+                disabled={gettingLocation || scanning}
                 data-testid="identify-gps-btn"
-                className="mt-6 w-full py-4 rounded-xl bg-amber-500 text-black font-semibold hover:bg-amber-400 disabled:opacity-60 flex items-center justify-center gap-2"
+                className="mt-6 w-full py-4 rounded-xl bg-amber-500 text-black font-semibold hover:bg-amber-400 disabled:opacity-60 flex items-center justify-center gap-2 transition"
               >
-                <Crosshair size={20} weight="bold" />
-                {scanning ? "Resolving road..." : "Identify Road Using GPS"}
+                {gettingLocation ? (
+                  <>
+                    <CircleNotch className="animate-spin" size={20} weight="bold" />
+                    Getting your location...
+                  </>
+                ) : scanning ? (
+                  <>
+                    <CircleNotch className="animate-spin" size={20} weight="bold" />
+                    Resolving road data...
+                  </>
+                ) : (
+                  <>
+                    <Crosshair size={20} weight="bold" />
+                    Identify Road Using GPS
+                  </>
+                )}
               </button>
               <div className="mt-3 text-xs text-zinc-500 font-mono text-center">
-                or click the map to drop a pin
+                or click anywhere on the map to drop a pin
               </div>
-              {err && <div className="mt-3 text-sm text-red-400 flex gap-2"><Warning size={16} /> {err}</div>}
+              {err && (
+                <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400 flex items-center gap-2">
+                  <Warning size={16} /> {err}
+                </div>
+              )}
             </div>
 
             {info && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
-                className="mt-6 rounded-2xl bg-[#111] border border-amber-500/30 p-6" data-testid="road-info-card">
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-6 rounded-2xl bg-[#111] border border-amber-500/30 p-6"
+                data-testid="road-info-card"
+              >
                 <div className="flex items-center justify-between">
-                  <div className="text-[11px] font-mono tracking-widest text-amber-400">/ ROAD PROFILE</div>
-                  <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-                    source: {info.source || "openstreetmap"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-mono tracking-widest text-amber-400">/ ROAD PROFILE</span>
+                    {info.has_overlay && (
+                      <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-mono">
+                        OFFICIAL OVERLAY
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                      {info.source || "openstreetmap"}
+                    </span>
+                    {canEditRoad && (
+                      <button
+                        onClick={openEditModal}
+                        className="px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 text-xs font-mono flex items-center gap-1.5 transition"
+                      >
+                        <PencilSimple size={13} />
+                        Edit road info
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="font-display font-black text-2xl mt-1">
+
+                <div className="font-display font-black text-2xl mt-2 text-white">
                   {info.road_name || <span className="italic text-zinc-500">Unnamed segment</span>}
                 </div>
                 {info.display_name && (
-                  <div className="text-xs text-zinc-500 mt-1">{info.display_name}</div>
+                  <div className="text-xs text-zinc-400 mt-1">{info.display_name}</div>
                 )}
+
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                   <Field icon={MapPin} label="Road Number / Ref" value={info.road_number} />
                   <Field icon={MapPin} label="District" value={info.district} />
@@ -110,31 +268,201 @@ export default function IdentifyRoad() {
                   <Field icon={Buildings} label="Constructed" value={info.construction_year} />
                   <Field icon={Buildings} label="Last Maintenance" value={info.last_maintenance} />
                 </div>
-                <a
-                  href={`https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=18/${loc.lat}/${loc.lng}`}
-                  target="_blank" rel="noreferrer"
-                  data-testid="identify-osm-link"
-                  className="mt-5 inline-flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 font-mono"
-                >
-                  Open on OpenStreetMap <ArrowSquareOut size={12} />
-                </a>
+
+                {loc && (
+                  <a
+                    href={`https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=18/${loc.lat}/${loc.lng}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    data-testid="identify-osm-link"
+                    className="mt-5 inline-flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 font-mono"
+                  >
+                    Open on OpenStreetMap <ArrowSquareOut size={12} />
+                  </a>
+                )}
               </motion.div>
             )}
 
-            {info && <div className="mt-6"><AuthorityConfirmCard info={info} /></div>}
+            {info && (
+              <div className="mt-6">
+                <AuthorityConfirmCard info={info} />
+              </div>
+            )}
           </div>
 
           <div>
             <DarkMap
-              center={[loc.lat, loc.lng]}
+              center={loc ? [loc.lat, loc.lng] : [28.4595, 77.0266]}
               zoom={15}
               onPick={onMapPick}
-              pickedMarker={{ lat: loc.lat, lng: loc.lng }}
+              pickedMarker={loc ? { lat: loc.lat, lng: loc.lng } : null}
               height={560}
             />
           </div>
         </div>
       </div>
+
+      {/* Admin Road Profile Overlay Modal */}
+      <AnimatePresence>
+        {isEditing && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#141414] border border-amber-500/30 rounded-2xl w-full max-w-xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                <div>
+                  <h3 className="font-display font-bold text-lg text-white">Edit Road Profile Overlay</h3>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    Authority overrides for OSM Way #{info?.osm_id || "current"}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-white/5"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {editSuccess && (
+                <div className="mt-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
+                  <CheckCircle size={16} /> {editSuccess}
+                </div>
+              )}
+
+              <form onSubmit={saveOverlay} className="mt-4 space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] font-mono uppercase text-zinc-400">Road Name</label>
+                    <input
+                      type="text"
+                      value={editForm.road_name}
+                      onChange={(e) => setEditForm({ ...editForm, road_name: e.target.value })}
+                      placeholder="e.g. NH-48 Express Corridor"
+                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-mono uppercase text-zinc-400">Road Ref / Number</label>
+                    <input
+                      type="text"
+                      value={editForm.road_number}
+                      onChange={(e) => setEditForm({ ...editForm, road_number: e.target.value })}
+                      placeholder="e.g. NH-48"
+                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] font-mono uppercase text-zinc-400">Governing Authority</label>
+                    <input
+                      type="text"
+                      value={editForm.authority}
+                      disabled={!!user?.authority}
+                      onChange={(e) => setEditForm({ ...editForm, authority: e.target.value })}
+                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white disabled:opacity-60 focus:border-amber-400 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-mono uppercase text-zinc-400">Assigned Contractor</label>
+                    <input
+                      type="text"
+                      value={editForm.contractor}
+                      onChange={(e) => setEditForm({ ...editForm, contractor: e.target.value })}
+                      placeholder="e.g. L&T Construction"
+                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-[11px] font-mono uppercase text-zinc-400">Surface Type</label>
+                    <input
+                      type="text"
+                      value={editForm.surface}
+                      onChange={(e) => setEditForm({ ...editForm, surface: e.target.value })}
+                      placeholder="e.g. Asphalt"
+                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-mono uppercase text-zinc-400">Speed Limit</label>
+                    <input
+                      type="text"
+                      value={editForm.maxspeed}
+                      onChange={(e) => setEditForm({ ...editForm, maxspeed: e.target.value })}
+                      placeholder="e.g. 90 km/h"
+                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-mono uppercase text-zinc-400">Lane Count</label>
+                    <input
+                      type="text"
+                      value={editForm.lanes}
+                      onChange={(e) => setEditForm({ ...editForm, lanes: e.target.value })}
+                      placeholder="e.g. 6"
+                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] font-mono uppercase text-zinc-400">Construction Year</label>
+                    <input
+                      type="text"
+                      value={editForm.construction_year}
+                      onChange={(e) => setEditForm({ ...editForm, construction_year: e.target.value })}
+                      placeholder="e.g. 2018"
+                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-mono uppercase text-zinc-400">Last Maintenance</label>
+                    <input
+                      type="text"
+                      value={editForm.last_maintenance}
+                      onChange={(e) => setEditForm({ ...editForm, last_maintenance: e.target.value })}
+                      placeholder="e.g. 2025-11"
+                      className="mt-1 w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-amber-400 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-3 flex items-center justify-end gap-3 border-t border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    className="px-4 py-2 rounded-xl text-xs text-zinc-400 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingOverlay}
+                    className="px-5 py-2.5 rounded-xl bg-amber-500 text-black font-semibold text-xs hover:bg-amber-400 disabled:opacity-60 flex items-center gap-1.5 transition"
+                  >
+                    {savingOverlay ? (
+                      <>
+                        <CircleNotch className="animate-spin" size={16} /> Saving Overlay...
+                      </>
+                    ) : (
+                      "Save Road Overlay"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

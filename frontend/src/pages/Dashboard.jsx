@@ -6,16 +6,19 @@ import DarkMap from "@/components/DarkMap";
 import Counter from "@/components/Counter";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
-import { WarningOctagon, CheckCircle, HourglassMedium, FireSimple, Plus } from "@phosphor-icons/react";
+import { WarningOctagon, CheckCircle, HourglassMedium, FireSimple, Plus, Calendar } from "@phosphor-icons/react";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [reports, setReports] = useState([]);
   const [stats, setStats] = useState({ total_problems: 0, resolved: 0, in_progress: 0, critical: 0 });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/reports").then((r) => setReports(r.data)).catch(() => {});
-    api.get("/stats/overview").then((r) => setStats(r.data)).catch(() => {});
+    Promise.all([
+      api.get("/reports").then((r) => setReports(r.data)).catch(() => {}),
+      api.get("/stats/overview").then((r) => setStats(r.data)).catch(() => {})
+    ]).finally(() => setLoading(false));
   }, []);
 
   const isAdmin = user?.role === "admin";
@@ -35,9 +38,20 @@ export default function Dashboard() {
               Welcome, {user?.name?.split(" ")[0]}
             </h1>
           </div>
-          <Link to="/report" data-testid="dashboard-new-report" className="px-5 py-3 rounded-full bg-amber-500 text-black font-medium hover:bg-amber-400 flex items-center gap-2">
-            <Plus size={16} weight="bold" /> New Report
-          </Link>
+          <div className="flex items-center gap-3">
+            {isAdmin && (
+              <Link
+                to="/events"
+                data-testid="dashboard-manage-events"
+                className="px-4 py-3 rounded-full border border-white/20 hover:bg-white/10 text-white font-medium flex items-center gap-2 text-sm"
+              >
+                <Calendar size={16} /> Civic Events
+              </Link>
+            )}
+            <Link to="/report" data-testid="dashboard-new-report" className="px-5 py-3 rounded-full bg-amber-500 text-black font-medium hover:bg-amber-400 flex items-center gap-2 text-sm">
+              <Plus size={16} weight="bold" /> New Report
+            </Link>
+          </div>
         </div>
 
         <div className="mt-10 grid md:grid-cols-4 gap-4">
@@ -56,10 +70,20 @@ export default function Dashboard() {
               <span className="text-xs font-mono text-zinc-500">{reports.length} entries</span>
             </div>
             <div className="divide-y divide-white/5">
-              {reports.length === 0 && (
+              {loading ? (
+                [1, 2, 3].map((i) => (
+                  <div key={i} className="py-4 px-2 animate-pulse flex justify-between items-center">
+                    <div className="space-y-2 w-2/3">
+                      <div className="h-4 bg-zinc-800 rounded w-1/3" />
+                      <div className="h-3 bg-zinc-800/60 rounded w-1/2" />
+                    </div>
+                    <div className="h-3 bg-zinc-800 rounded w-16" />
+                  </div>
+                ))
+              ) : reports.length === 0 ? (
                 <div className="text-sm text-zinc-500 italic py-8 text-center">No reports yet. Head over to Report to file one.</div>
-              )}
-              {reports.map((r) => (
+              ) : null}
+              {!loading && reports.map((r) => (
                 <Link
                   key={r.id}
                   to={`/tracking/${r.id}`}

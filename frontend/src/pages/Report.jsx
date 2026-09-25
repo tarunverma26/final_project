@@ -50,6 +50,15 @@ export default function Report() {
   const onPhoto = (e) => {
     const f = e.target.files?.[0];
     if (!f) return;
+    if (!f.type.startsWith("image/")) {
+      setErr("Please select a valid image file (JPEG, PNG, WEBP).");
+      return;
+    }
+    if (f.size > 10 * 1024 * 1024) {
+      setErr("Image file size exceeds maximum limit of 10 MB.");
+      return;
+    }
+    setErr("");
     setPhoto(f);
     const r = new FileReader();
     r.onload = () => setPreview(r.result);
@@ -61,11 +70,24 @@ export default function Report() {
     if (!user) { nav("/login"); return; }
     setBusy(true); setErr("");
     try {
+      let uploadedUrl = null;
+      if (photo) {
+        const formData = new FormData();
+        formData.append("file", photo);
+        const uploadRes = await api.post("/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        uploadedUrl = uploadRes.data?.url;
+      }
+
       const { data } = await api.post("/reports", {
-        category, severity, description,
-        latitude: coords.lat, longitude: coords.lng,
+        category,
+        severity,
+        description,
+        latitude: coords.lat,
+        longitude: coords.lng,
         road_name: roadName || null,
-        photo_url: preview || null,
+        photo_url: uploadedUrl || null,
       });
       setResult(data);
     } catch (e) {
@@ -124,7 +146,7 @@ export default function Report() {
 
             <div>
               <label className="text-xs font-mono text-zinc-400">ROAD / LANDMARK</label>
-              <input value={roadName} onChange={(e) => setRoadName(e.target.value)}
+              <input value={roadName} onChange={(e) => { setRoadName(e.target.value); if (err) setErr(""); }}
                 data-testid="report-road-input"
                 placeholder="e.g. NH-48 near Cyber Hub"
                 className="mt-2 w-full rounded-lg bg-black/60 border border-white/10 px-4 py-3 focus:outline-none focus:border-amber-500/60" />
@@ -132,7 +154,7 @@ export default function Report() {
 
             <div>
               <label className="text-xs font-mono text-zinc-400">DESCRIPTION</label>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)}
+              <textarea value={description} onChange={(e) => { setDescription(e.target.value); if (err) setErr(""); }}
                 data-testid="report-desc-input"
                 rows={3} placeholder="What did you see?"
                 className="mt-2 w-full rounded-lg bg-black/60 border border-white/10 px-4 py-3 focus:outline-none focus:border-amber-500/60" />

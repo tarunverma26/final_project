@@ -19,13 +19,18 @@ export default function Login() {
     e.preventDefault();
     setBusy(true); setErr("");
     try {
-      await login(email.trim().toLowerCase(), password, role);
-      nav("/dashboard");
+      const loggedUser = await login(email.trim().toLowerCase(), password, role);
+      if (loggedUser?.role === "admin") {
+        nav("/admin/dashboard");
+      } else {
+        nav("/dashboard");
+      }
     } catch (e) {
       setErr(formatApiErrorDetail(e.response?.data?.detail) || e.message);
     }
     setBusy(false);
   };
+
 
   return (
     <div className="relative min-h-screen asphalt-bg overflow-hidden" data-testid="login-page">
@@ -63,7 +68,7 @@ export default function Login() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); if (err) setErr(""); }}
               data-testid="login-email"
               placeholder="you@city.gov"
               required
@@ -74,7 +79,7 @@ export default function Login() {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setPassword(e.target.value); if (err) setErr(""); }}
               data-testid="login-password"
               placeholder="••••••••"
               required
@@ -96,12 +101,24 @@ export default function Login() {
               {busy ? "Signing in..." : <>Enter ROADWATCH <ArrowRight size={16} weight="bold" /></>}
             </button>
 
-            <div className="mt-4 text-center text-xs text-zinc-500">
-              New here?{" "}
-              <Link to="/register" className="text-amber-400 hover:underline" data-testid="login-register-link">
-                Create an account
-              </Link>
+            <div className="mt-4 text-center text-xs text-zinc-400">
+              {role === "admin" ? (
+                <>
+                  Need authority officer access?{" "}
+                  <Link to="/admin/register" className="text-amber-400 font-semibold hover:underline" data-testid="login-admin-register-link">
+                    Register as Administrator
+                  </Link>
+                </>
+              ) : (
+                <>
+                  New citizen?{" "}
+                  <Link to="/register" className="text-amber-400 hover:underline" data-testid="login-register-link">
+                    Create an account
+                  </Link>
+                </>
+              )}
             </div>
+
             <div className="mt-2 text-center">
               <Link to="/" className="text-xs text-zinc-500 hover:text-zinc-300">← Back to landing</Link>
             </div>
