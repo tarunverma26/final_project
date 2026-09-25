@@ -40,14 +40,15 @@ function TrustGauge({ score = 0 }) {
 }
 
 function Stars({ value }) {
-  if (value == null) return <span className="text-[#94A3B8] italic text-xs">No ratings yet</span>;
-  const full = Math.round(value);
+  const num = typeof value === "number" && !isNaN(value) ? value : null;
+  if (num == null) return <span className="text-[#94A3B8] italic text-xs">No ratings yet</span>;
+  const full = Math.round(num);
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((i) => (
         <Star key={i} size={14} weight={i <= full ? "fill" : "regular"} className={i <= full ? "text-[#F59E0B]" : "text-slate-300"} />
       ))}
-      <span className="text-xs text-[#64748B] ml-1 font-mono font-medium">{value.toFixed(2)}</span>
+      <span className="text-xs text-[#64748B] ml-1 font-mono font-medium">{num.toFixed(2)}</span>
     </div>
   );
 }

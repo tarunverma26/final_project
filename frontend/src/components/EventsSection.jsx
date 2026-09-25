@@ -93,61 +93,69 @@ export default function EventsSection() {
         {/* Events Grid */}
         <Reveal delay={150} className="mt-12">
           <div className="grid md:grid-cols-3 gap-6">
-            {events.map((evt) => (
-              <div
-                key={evt._id}
-                data-testid={`event-card-${evt._id}`}
-                className="rounded-2xl border border-[#E2E8F0] bg-white p-6 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-orange-200 transition-all duration-200"
-              >
-                <div>
-                  {/* Card Header */}
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span
-                      className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-md border ${getAuthorityBadge(
-                        evt.authority
-                      )}`}
-                    >
-                      {evt.authority} JURISDICTION
-                    </span>
-                    <span
-                      className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-md border ${getStatusBadge(
-                        evt.status
-                      )}`}
-                    >
-                      {evt.status}
-                    </span>
+            {events.map((evt, idx) => {
+              const evtKey = evt._id || evt.id || `event-${idx}`;
+              const auth = evt.authority || (evt.organizer && evt.organizer.includes("NHAI") ? "NHAI" : (evt.organizer && evt.organizer.includes("MCD") ? "MCD" : "PWD"));
+              const dateDisplay = evt.start_date
+                ? `${new Date(evt.start_date).toLocaleDateString([], { month: "short", day: "numeric" })} – ${new Date(evt.end_date || evt.start_date).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}`
+                : (evt.date ? `${new Date(evt.date).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}` : "Scheduled Public Notice");
+              const impactDisplay = evt.impact || (evt.time ? `Starts at ${evt.time}` : "Active Municipal Advisory");
+
+              return (
+                <div
+                  key={evtKey}
+                  data-testid={`event-card-${evtKey}`}
+                  className="rounded-2xl border border-[#E2E8F0] bg-white p-6 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-orange-200 transition-all duration-200"
+                >
+                  <div>
+                    {/* Card Header */}
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <span
+                        className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-md border ${getAuthorityBadge(
+                          auth
+                        )}`}
+                      >
+                        {auth} JURISDICTION
+                      </span>
+                      <span
+                        className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-md border ${getStatusBadge(
+                          evt.status || "SCHEDULED"
+                        )}`}
+                      >
+                        {evt.status || "SCHEDULED"}
+                      </span>
+                    </div>
+
+                    <h3 className="font-display text-lg font-bold text-[#12304A] mt-2 leading-snug">
+                      {evt.title}
+                    </h3>
+
+                    <p className="mt-2 text-xs md:text-sm text-[#64748B] leading-relaxed">
+                      {evt.description}
+                    </p>
                   </div>
 
-                  <h3 className="font-display text-lg font-bold text-[#12304A] mt-2 leading-snug">
-                    {evt.title}
-                  </h3>
-
-                  <p className="mt-2 text-xs md:text-sm text-[#64748B] leading-relaxed">
-                    {evt.description}
-                  </p>
+                  <div className="mt-6 pt-4 border-t border-[#F1F5F9] space-y-2 text-xs text-[#64748B]">
+                    <div className="flex items-center gap-2">
+                      <MapPin size={14} className="text-[#F97316] shrink-0" />
+                      <span className="text-[#0F172A] font-medium line-clamp-1">{evt.location}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar size={14} className="text-[#0F766E] shrink-0" />
+                      <span className="font-mono text-[11px]">
+                        {dateDisplay}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock size={14} className="text-[#D97706] shrink-0" />
+                      <span className="text-amber-700 font-medium text-[11px] bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60">
+                        {impactDisplay}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-
-                <div className="mt-6 pt-4 border-t border-[#F1F5F9] space-y-2 text-xs text-[#64748B]">
-                  <div className="flex items-center gap-2">
-                    <MapPin size={14} className="text-[#F97316] shrink-0" />
-                    <span className="text-[#0F172A] font-medium line-clamp-1">{evt.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar size={14} className="text-[#0F766E] shrink-0" />
-                    <span className="font-mono text-[11px]">
-                      {new Date(evt.start_date).toLocaleDateString([], { month: "short", day: "numeric" })} –{" "}
-                      {new Date(evt.end_date).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock size={14} className="text-[#D97706] shrink-0" />
-                    <span className="text-amber-700 font-medium text-[11px] bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60">
-                      {evt.impact}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Reveal>
 

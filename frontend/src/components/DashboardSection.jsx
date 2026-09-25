@@ -17,7 +17,15 @@ export default function DashboardSection() {
     api
       .get("/stats/overview")
       .then((res) => {
-        if (res.data) setStats((prev) => ({ ...prev, ...res.data }));
+        if (res.data) {
+          setStats((prev) => ({
+            ...prev,
+            total_problems: res.data.total_problems ?? prev.total_problems,
+            resolved_count: res.data.resolved ?? res.data.resolved_count ?? prev.resolved_count,
+            in_progress_count: res.data.in_progress ?? res.data.in_progress_count ?? prev.in_progress_count,
+            avg_resolution_days: res.data.avg_resolution_days ?? prev.avg_resolution_days,
+          }));
+        }
       })
       .catch(() => {});
   }, []);

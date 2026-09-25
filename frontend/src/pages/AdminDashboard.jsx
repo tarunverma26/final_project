@@ -638,15 +638,15 @@ export default function AdminDashboard() {
                   <span className="text-[#12304A] font-semibold">
                     {geotagLoading ? (
                       <span className="text-[#EA580C] animate-pulse">Acquiring GPS fix...</span>
-                    ) : resolutionGeotag ? (
-                      `${resolutionGeotag.source.toUpperCase()} (${resolutionGeotag.latitude.toFixed(5)}, ${resolutionGeotag.longitude.toFixed(5)})`
+                    ) : resolutionGeotag && typeof resolutionGeotag.latitude === "number" ? (
+                      `${(resolutionGeotag.source || "GPS").toUpperCase()} (${resolutionGeotag.latitude.toFixed(5)}, ${resolutionGeotag.longitude.toFixed(5)})`
                     ) : (
                       "Waiting for photo upload..."
                     )}
                   </span>
                 </div>
 
-                {distanceMeters !== null && (
+                {typeof distanceMeters === "number" && !isNaN(distanceMeters) && (
                   <div className="flex items-center justify-between pt-1 border-t border-[#E2E8F0]">
                     <span className="text-[#64748B]">Proximity to Issue:</span>
                     <span
