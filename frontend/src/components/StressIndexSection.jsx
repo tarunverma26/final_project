@@ -112,29 +112,29 @@ export default function StressIndexSection() {
     if (score >= 70) {
       return {
         badgeColor: C.red,
-        bgGlow: C.redGlow,
-        border: "border-red-500/40",
-        pillBg: "bg-red-500/10 text-red-400 border border-red-500/30",
-        barColor: "bg-red-500",
+        border: "border-[#E5484D]/35",
+        pillBg: "bg-[#E5484D]/10 text-[#F87171] border border-[#E5484D]/25",
+        barColor: "bg-[#E5484D]",
+        circleBg: "rgba(229, 72, 77, 0.08)",
         label: "CRITICAL RISK",
       };
     }
     if (score >= 40) {
       return {
         badgeColor: C.amber,
-        bgGlow: C.amberGlow,
-        border: "border-amber-500/40",
-        pillBg: "bg-amber-500/10 text-amber-400 border border-amber-500/30",
-        barColor: "bg-amber-500",
+        border: "border-[#E59518]/30",
+        pillBg: "bg-[#E59518]/10 text-[#E59518] border border-[#E59518]/25",
+        barColor: "bg-[#E59518]",
+        circleBg: "rgba(229, 149, 24, 0.08)",
         label: "ELEVATED RISK",
       };
     }
     return {
       badgeColor: C.green,
-      bgGlow: C.greenGlow,
-      border: "border-emerald-500/30",
-      pillBg: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30",
-      barColor: "bg-emerald-500",
+      border: "border-[#3EA370]/25",
+      pillBg: "bg-[#3EA370]/10 text-[#5BAE85] border border-[#3EA370]/25",
+      barColor: "bg-[#3EA370]",
+      circleBg: "rgba(62, 163, 112, 0.08)",
       label: "LOW RISK",
     };
   };
@@ -147,10 +147,10 @@ export default function StressIndexSection() {
         <Reveal>
           <div className="max-w-3xl">
             <Eyebrow text="/ COMPOUND RESOURCE STRESS INDEX" />
-            <h2 className={`${FONT_DISPLAY} text-4xl md:text-5xl text-white mt-1 leading-[1.08]`}>
-              Compound Resource <span className="text-amber-400">Stress Index.</span>
+            <h2 className={`${FONT_DISPLAY} text-4xl md:text-5xl text-[#F2EFE9] mt-1 leading-[1.08]`}>
+              Compound Resource <span className="text-[#E59518]">Stress Index.</span>
             </h2>
-            <p className="mt-4 text-base md:text-lg text-zinc-400 leading-relaxed">
+            <p className="mt-3 text-base md:text-lg text-[#A39E93] leading-relaxed">
               Potholes, drainage failures, and streetlight outages are tracked separately with no single view of how bad
               an area is. RoadWatch synthesizes cross-department data into a single 0–100 vulnerability score.
             </p>
@@ -159,19 +159,19 @@ export default function StressIndexSection() {
 
         {/* Short explanation quote as required by prompt */}
         <Reveal delay={100} className="mt-8">
-          <div className="glass rounded-xl p-4 md:p-5 border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="rounded-2xl p-4 md:p-5 border border-white/[0.08] bg-[#141416]/95 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+              <div className="w-9 h-9 rounded-lg bg-[#E59518]/10 border border-[#E59518]/25 flex items-center justify-center text-[#E59518] shrink-0">
                 <Waves size={20} weight="bold" />
               </div>
-              <p className="text-xs md:text-sm text-zinc-300 italic">
+              <p className="text-xs md:text-sm text-[#F2EFE9]/90 italic">
                 "Combines multiple infrastructure signals to flag compounding risk (e.g. bad road + failed drainage = flood-prone stretch) that single-issue tracking misses."
               </p>
             </div>
 
             {/* Filter pills */}
             <div className="flex items-center gap-1.5 self-end md:self-auto font-mono text-xs">
-              <span className="text-zinc-500 text-[11px] mr-1 hidden sm:inline">FILTER:</span>
+              <span className="text-[#78736A] text-[11px] mr-1 hidden sm:inline">FILTER:</span>
               {[
                 { id: "all", label: "All Wards" },
                 { id: "high", label: "High Risk (>70)" },
@@ -181,10 +181,10 @@ export default function StressIndexSection() {
                 <button
                   key={btn.id}
                   onClick={() => setFilter(btn.id)}
-                  className={`px-2.5 py-1 rounded-md text-[11px] transition-colors ${
+                  className={`px-2.5 py-1 rounded-md text-[11px] transition-colors cursor-pointer ${
                     filter === btn.id
-                      ? "bg-amber-500 text-black font-semibold"
-                      : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white"
+                      ? "bg-[#E59518] text-[#0E0E10] font-semibold"
+                      : "bg-white/[0.05] text-[#A39E93] hover:bg-white/[0.08] hover:text-[#F2EFE9]"
                   }`}
                 >
                   {btn.label}
@@ -210,32 +210,32 @@ export default function StressIndexSection() {
                 <div
                   key={zone.id}
                   data-testid={`stress-card-${zone.ward.toLowerCase().replace(/\s+/g, "-")}`}
-                  className={`rounded-2xl border bg-[#111114]/90 p-6 flex flex-col justify-between transition-all duration-300 hover:border-white/20 hover:-translate-y-1 ${risk.border}`}
+                  className={`rounded-2xl border bg-[#141416]/95 p-6 flex flex-col justify-between transition-all duration-300 hover:border-white/[0.14] hover:-translate-y-0.5 ${risk.border}`}
                 >
                   {/* Top Bar: Ward Name & Priority Rank */}
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-white/5 text-zinc-300 border border-white/10">
+                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-white/[0.06] text-[#F2EFE9] border border-white/[0.08]">
                           {zone.ward}
                         </span>
                         <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-semibold ${risk.pillBg}`}>
                           {risk.label}
                         </span>
                       </div>
-                      <span className="text-xs text-zinc-500 font-mono">
+                      <span className="text-xs text-[#78736A] font-mono">
                         PRIORITY {zone.priorityRank}
                       </span>
                     </div>
 
-                    <h3 className={`${FONT_DISPLAY} text-lg md:text-xl text-white font-bold leading-snug`}>
+                    <h3 className={`${FONT_DISPLAY} text-lg md:text-xl text-[#F2EFE9] font-bold leading-snug`}>
                       {zone.name}
                     </h3>
 
                     {/* Composite Score Meter */}
-                    <div className="mt-4 p-4 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between">
+                    <div className="mt-4 p-4 rounded-xl bg-[#0E0E10]/80 border border-white/[0.05] flex items-center justify-between">
                       <div>
-                        <div className="text-[11px] font-mono text-zinc-500">COMPOUND STRESS SCORE</div>
+                        <div className="text-[11px] font-mono text-[#78736A]">COMPOUND STRESS SCORE</div>
                         <div className="flex items-baseline gap-1 mt-0.5">
                           <span
                             className="font-display font-black text-3xl md:text-4xl"
@@ -243,15 +243,15 @@ export default function StressIndexSection() {
                           >
                             {zone.score}
                           </span>
-                          <span className="text-xs text-zinc-500">/100</span>
+                          <span className="text-xs text-[#78736A]">/100</span>
                         </div>
                       </div>
 
-                      {/* Visual Circular Gauge / Status indicator */}
-                      <div className="w-12 h-12 rounded-full border-2 flex items-center justify-center font-mono text-xs font-bold"
+                      {/* Visual Circular Gauge */}
+                      <div className="w-12 h-12 rounded-full border flex items-center justify-center font-mono text-xs font-bold"
                         style={{
                           borderColor: risk.badgeColor,
-                          backgroundColor: risk.bgGlow,
+                          backgroundColor: risk.circleBg,
                           color: risk.badgeColor,
                         }}
                       >
@@ -262,59 +262,59 @@ export default function StressIndexSection() {
 
                   {/* 3 Contributing Issue Types Breakdown */}
                   <div className="mt-5">
-                    <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 mb-1.5">
+                    <div className="flex items-center justify-between text-[11px] font-mono text-[#A39E93] mb-1.5">
                       <span>CONTRIBUTING SIGNALS</span>
-                      <span className="text-zinc-500">{totalIssues} total active</span>
+                      <span className="text-[#78736A]">{totalIssues} total active</span>
                     </div>
 
                     {/* Proportional Compound Bar */}
-                    <div className="h-2 rounded-full overflow-hidden flex bg-white/10 mb-3">
+                    <div className="h-2 rounded-full overflow-hidden flex bg-white/[0.08] mb-3">
                       <div
                         style={{ width: `${potholePct}%` }}
-                        className="bg-amber-400"
+                        className="bg-[#E59518]"
                         title={`Potholes: ${zone.potholes}`}
                       />
                       <div
                         style={{ width: `${drainagePct}%` }}
-                        className="bg-blue-400"
+                        className="bg-[#5B8EC2]"
                         title={`Drainage: ${zone.drainage}`}
                       />
                       <div
                         style={{ width: `${lightingPct}%` }}
-                        className="bg-zinc-400"
+                        className="bg-[#78736A]"
                         title={`Lighting: ${zone.lighting}`}
                       />
                     </div>
 
                     {/* 3 Mini breakdown pills */}
                     <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                      <div className="p-2 rounded-lg bg-white/5 border border-white/5">
-                        <div className="flex items-center justify-center gap-1 text-[11px] text-amber-400 font-mono">
+                      <div className="p-2 rounded-lg bg-[#0E0E10]/80 border border-white/[0.05]">
+                        <div className="flex items-center justify-center gap-1 text-[11px] text-[#E59518] font-mono">
                           <WarningCircle size={12} /> Road
                         </div>
-                        <div className="font-bold text-white mt-0.5">{zone.potholes}</div>
+                        <div className="font-bold text-[#F2EFE9] mt-0.5">{zone.potholes}</div>
                       </div>
 
-                      <div className="p-2 rounded-lg bg-white/5 border border-white/5">
-                        <div className="flex items-center justify-center gap-1 text-[11px] text-blue-400 font-mono">
+                      <div className="p-2 rounded-lg bg-[#0E0E10]/80 border border-white/[0.05]">
+                        <div className="flex items-center justify-center gap-1 text-[11px] text-[#5B8EC2] font-mono">
                           <Drop size={12} /> Drain
                         </div>
-                        <div className="font-bold text-white mt-0.5">{zone.drainage}</div>
+                        <div className="font-bold text-[#F2EFE9] mt-0.5">{zone.drainage}</div>
                       </div>
 
-                      <div className="p-2 rounded-lg bg-white/5 border border-white/5">
-                        <div className="flex items-center justify-center gap-1 text-[11px] text-zinc-400 font-mono">
+                      <div className="p-2 rounded-lg bg-[#0E0E10]/80 border border-white/[0.05]">
+                        <div className="flex items-center justify-center gap-1 text-[11px] text-[#A39E93] font-mono">
                           <Lightbulb size={12} /> Light
                         </div>
-                        <div className="font-bold text-white mt-0.5">{zone.lighting}</div>
+                        <div className="font-bold text-[#F2EFE9] mt-0.5">{zone.lighting}</div>
                       </div>
                     </div>
                   </div>
 
                   {/* Compounding Risk Insight */}
-                  <div className="mt-5 pt-4 border-t border-white/5">
-                    <div className="text-[11px] text-zinc-500 font-mono mb-1">COMPOUNDING VULNERABILITY:</div>
-                    <p className="text-xs text-zinc-300 leading-relaxed font-sans">
+                  <div className="mt-5 pt-4 border-t border-white/[0.04]">
+                    <div className="text-[11px] text-[#78736A] font-mono mb-1">COMPOUNDING VULNERABILITY:</div>
+                    <p className="text-xs text-[#A39E93] leading-relaxed font-sans">
                       {zone.compoundInsight}
                     </p>
                   </div>
@@ -324,7 +324,7 @@ export default function StressIndexSection() {
           </div>
         </Reveal>
 
-        {/* Section bottom dashed amber lane divider as required */}
+        {/* Section bottom dashed amber lane divider */}
         <div className="rw-lane mt-20" />
       </div>
     </section>

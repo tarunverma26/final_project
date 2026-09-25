@@ -1,0 +1,11 @@
+{
+  "name": "roadwatch-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npm --prefix frontend start",
+    "build": "npm --prefix frontend build",
+    "db:setup": "python backend/seed_demo.py",
+    "seed:demo": "python backend/seed_demo.py"
+  }
+}

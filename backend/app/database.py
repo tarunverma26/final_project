@@ -29,6 +29,10 @@ def _init_db():
 
 client, db = _init_db()
 
+def get_database():
+    """Return initialized database instance."""
+    return db
+
 CONTRACTORS_SEED = [
     {"name": "IRB Infrastructure Developers", "road": "NH-48", "region": "Delhi–Jaipur Corridor", "focus": "National Highways"},
     {"name": "L&T Construction", "road": "NH-16", "region": "Chennai–Kolkata", "focus": "National Highways"},
@@ -134,10 +138,11 @@ async def seed_default_data(hash_func):
                 {"$set": {"code": code, "is_active": True}}
             )
 
-    # 2. Seed Demo Admin Accounts (Issue 4b - seeded directly for testing/demos)
-    # NHAI (admin.nhai@roadwatch.demo), MCD (admin.mcd@roadwatch.demo), PWD (admin.pwd@roadwatch.demo)
+    # 2. Seed Demo Admin Accounts (seeded directly for testing/demos)
     for admin_spec in DEMO_ADMINS:
         admin_email = admin_spec["email"].lower()
+        dept = admin_spec.get("department", f"{admin_spec['authority']} Operations")
+        invite_code = admin_spec.get("invite_code", "")
         existing_admin = await db.users.find_one({"email": admin_email})
         if not existing_admin:
             await db.users.insert_one({
@@ -147,8 +152,10 @@ async def seed_default_data(hash_func):
                 "role": "admin",
                 "authority": admin_spec["authority"],
                 "password_hash": hash_func(admin_spec["password"]),
-                "department": f"{admin_spec['authority']} Operations",
+                "department": dept,
                 "is_active": True,
+                "is_verified": True,
+                "invite_code_used": invite_code,
                 "created_at": now,
             })
             logger.info(f"[DB] Seeded demo admin for {admin_spec['authority']}: {admin_email}")
@@ -157,11 +164,14 @@ async def seed_default_data(hash_func):
                 {"email": admin_email},
                 {
                     "$set": {
+                        "name": admin_spec["name"],
                         "role": "admin",
                         "authority": admin_spec["authority"],
                         "password_hash": hash_func(admin_spec["password"]),
-                        "department": f"{admin_spec['authority']} Operations",
+                        "department": dept,
                         "is_active": True,
+                        "is_verified": True,
+                        "invite_code_used": invite_code,
                     }
                 }
             )

@@ -16,7 +16,7 @@ import RainLayer from "@/components/RainLayer";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white relative">
+    <div className="min-h-screen bg-[#0E0E10] text-[#F2EFE9] relative">
       <GlobalStyle />
       <Navbar />
 

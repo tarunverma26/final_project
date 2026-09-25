@@ -67,7 +67,9 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "test": "craco test"
+    "test": "craco test",
+    "db:setup": "python ../backend/seed_demo.py",
+    "seed:demo": "python ../backend/seed_demo.py"
   },
   "browserslist": {
     "production": [

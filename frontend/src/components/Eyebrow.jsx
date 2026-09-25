@@ -9,12 +9,12 @@ export default function Eyebrow({ text, children, className = "" }) {
     <div
       className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] tracking-widest ${FONT_MONO} mb-3 ${className}`}
       style={{
-        backgroundColor: "rgba(245, 158, 11, 0.08)",
-        border: "1px solid rgba(245, 158, 11, 0.25)",
-        color: C.amber,
+        backgroundColor: "rgba(229, 149, 24, 0.06)",
+        border: "1px solid rgba(229, 149, 24, 0.18)",
+        color: C.amberMuted || "#B58A46",
       }}
     >
-      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+      <span className="w-1.5 h-1.5 rounded-full bg-[#E59518] animate-pulse" />
       <span>{label}</span>
     </div>
   );

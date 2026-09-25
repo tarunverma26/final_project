@@ -3,54 +3,138 @@ import { C, FONT_DISPLAY, FONT_MONO } from "@/theme";
 import Eyebrow from "./Eyebrow";
 import Reveal from "./Reveal";
 import useCountUp from "@/hooks/useCountUp";
-import { MARKERS } from "@/constants/markers";
 import {
   Path,
-  Lightning,
   ShieldCheck,
   WarningOctagon,
   Clock,
   Car,
   ArrowsClockwise,
-  CheckCircle,
   Truck,
   ArrowRight,
   Info,
+  MapPin,
+  MagnifyingGlass,
 } from "@phosphor-icons/react";
+
+/**
+ * PLACEHOLDER ROUTING & HAZARD-SCORING ENGINE
+ * Generates deterministic, plausible mock distance, ETA, hazard count, and road health scores
+ * for any arbitrary From/To pair. In production, this integrates with a real routing engine
+ * (e.g. OSRM, Valhalla) and spatial MongoDB 2dsphere hazard queries.
+ */
+function computeRouteComparison(from, to) {
+  const fromClean = (from || "").trim();
+  const toClean = (to || "").trim();
+  const seed = `${fromClean.toLowerCase()}:::${toClean.toLowerCase()}`;
+  
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash << 5) - hash + seed.charCodeAt(i);
+    hash |= 0;
+  }
+  const abs = Math.abs(hash);
+
+  // Plausible distance in kilometers (8.4 km to 23.5 km)
+  const baseKm = 8.5 + (abs % 130) / 10;
+  const fastDist = `${baseKm.toFixed(1)} km`;
+  const recDist = `${(baseKm + 2.3 + (abs % 12) / 10).toFixed(1)} km`;
+
+  // Plausible travel times
+  const fastEtaMin = 18 + (abs % 16);
+  const recEtaMin = fastEtaMin + 3 + (abs % 4);
+
+  // Hazard counts
+  const fastHazards = 9 + (abs % 10);
+  const fastCritical = 3 + (abs % 5);
+  const recHazards = 1 + (abs % 3);
+
+  // Health scores (0-100)
+  const fastScore = Math.max(26, Math.min(46, 100 - (fastHazards * 4 + fastCritical * 5)));
+  const recScore = Math.max(88, Math.min(96, 100 - recHazards * 3));
+
+  return {
+    fromName: fromClean,
+    toName: toClean,
+    fastest: {
+      name: `${fromClean} via Direct Arterial`,
+      badge: "FASTEST (TIME ONLY)",
+      eta: `${fastEtaMin} min`,
+      distance: fastDist,
+      hazardsCount: fastHazards,
+      criticalHazards: fastCritical,
+      score: fastScore,
+      description: `Direct arterial route traversing unpatched monsoon potholes and heavy commercial transit bottlenecks.`,
+      fleetImpact: `High suspension fatigue, ₹${1450 + (abs % 800)} estimated repair cost per 100 trips.`,
+    },
+    recommended: {
+      name: `${fromClean} via Resurfaced Corridor to ${toClean}`,
+      badge: "RECOMMENDED BY ROADWATCH",
+      eta: `${recEtaMin} min`,
+      distance: recDist,
+      hazardsCount: recHazards,
+      criticalHazards: 0,
+      score: recScore,
+      description: `Recently resurfaced arterial bypass prioritizing reinforced asphalt and verified operational stormwater drainage.`,
+      fleetImpact: `76% reduction in shock impacts, minimal tyre wear, zero unexpected downtime.`,
+    },
+  };
+}
 
 export default function RouteHealthSection() {
   const [selectedRoute, setSelectedRoute] = useState("recommended");
 
-  // Derive dynamic hazard stats from MARKERS
-  const fastestHazards = MARKERS.filter((m) => m.route_proximity === "fastest");
-  const recommendedHazards = MARKERS.filter((m) => m.route_proximity === "recommended");
+  // Form states with default pre-filled demo route
+  const [fromInput, setFromInput] = useState("DLF Cyber City Phase II");
+  const [toInput, setToInput] = useState("Subhash Chowk, Sohna Road");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isCalculating, setIsCalculating] = useState(false);
 
-  // Mock computed health score (0-100) based on hazard impact
-  const fastestHazardCount = 14; // includes sub-meter road bumps & clusters
-  const recommendedHazardCount = 2; // only 2 minor issues
+  // Current calculated route comparison data
+  const [comparison, setComparison] = useState(() =>
+    computeRouteComparison("DLF Cyber City Phase II", "Subhash Chowk, Sohna Road")
+  );
 
-  // Animated health scores
-  const scoreFastest = useCountUp(38, 1200);
-  const scoreRecommended = useCountUp(92, 1200);
+  const scoreFastest = useCountUp(comparison.fastest.score, 900);
+  const scoreRecommended = useCountUp(comparison.recommended.score, 900);
+
+  const handleCompare = (e) => {
+    e.preventDefault();
+    if (!fromInput.trim() || !toInput.trim()) {
+      setErrorMessage("Please enter both origin and destination locations to calculate route health.");
+      return;
+    }
+
+    setErrorMessage("");
+    setIsCalculating(true);
+
+    // Simulate fast recalculation pulse
+    setTimeout(() => {
+      const nextComparison = computeRouteComparison(fromInput, toInput);
+      setComparison(nextComparison);
+      setIsCalculating(false);
+    }, 250);
+  };
+
+  const isFormValid = fromInput.trim().length > 0 && toInput.trim().length > 0;
 
   const routes = [
     {
       id: "fastest",
       type: "fastest",
-      name: "NH-48 via Cyber Corridor & IFFCO Chowk",
-      badge: "FASTEST (TIME ONLY)",
-      eta: "22 min",
-      distance: "12.4 km",
-      hazardsCount: fastestHazardCount,
-      criticalHazards: 5,
+      name: comparison.fastest.name,
+      badge: comparison.fastest.badge,
+      eta: comparison.fastest.eta,
+      distance: comparison.fastest.distance,
+      hazardsCount: comparison.fastest.hazardsCount,
+      criticalHazards: comparison.fastest.criticalHazards,
       score: scoreFastest,
       scoreColor: C.red,
-      scoreGlow: C.redGlow,
-      borderStyle: "border-white/10 hover:border-red-500/40",
-      description: "Direct highway path traversing unpatched monsoon potholes and waterlogged service flyovers.",
-      fleetImpact: "High suspension fatigue, ₹1,850 avg. maintenance cost per 100 trips.",
+      borderStyle: "border-white/[0.08] bg-[#141416]/95 hover:border-white/[0.14]",
+      description: comparison.fastest.description,
+      fleetImpact: comparison.fastest.fleetImpact,
       highlights: [
-        { label: "Critical Craters", value: "5 reported" },
+        { label: "Critical Craters", value: `${comparison.fastest.criticalHazards} reported` },
         { label: "Waterlogging Pockets", value: "3 active" },
         { label: "Puncture Risk", value: "HIGH" },
       ],
@@ -58,18 +142,17 @@ export default function RouteHealthSection() {
     {
       id: "recommended",
       type: "recommended",
-      name: "Golf Course Ext. & Southern Peripheral Bypass",
-      badge: "★ RECOMMENDED BY ROADWATCH",
-      eta: "26 min",
-      distance: "15.1 km",
-      hazardsCount: recommendedHazardCount,
-      criticalHazards: 0,
+      name: comparison.recommended.name,
+      badge: `★ ${comparison.recommended.badge}`,
+      eta: comparison.recommended.eta,
+      distance: comparison.recommended.distance,
+      hazardsCount: comparison.recommended.hazardsCount,
+      criticalHazards: comparison.recommended.criticalHazards,
       score: scoreRecommended,
       scoreColor: C.amber,
-      scoreGlow: C.amberGlow,
-      borderStyle: "border-amber-500 ring-1 ring-amber-500/40 bg-gradient-to-b from-[#181510] to-[#121214]",
-      description: "Recently resurfaced arterial corridor with zero severe cavities and active stormwater drainage.",
-      fleetImpact: "78% shock reduction, zero breakdown incidents, fleet tyre longevity +24%.",
+      borderStyle: "border-[#E59518]/50 bg-[#181613]/95 shadow-[0_4px_20px_rgba(229,149,24,0.06)]",
+      description: comparison.recommended.description,
+      fleetImpact: comparison.recommended.fleetImpact,
       highlights: [
         { label: "Critical Craters", value: "0 reported" },
         { label: "Waterlogging Pockets", value: "None" },
@@ -86,34 +169,125 @@ export default function RouteHealthSection() {
         <Reveal>
           <div className="max-w-3xl">
             <Eyebrow text="/ CONDITION-AWARE NAVIGATION" />
-            <h2 className={`${FONT_DISPLAY} text-4xl md:text-5xl text-white mt-1 leading-[1.08]`}>
-              Fastest route vs. <span className="text-amber-400">Healthiest route.</span>
+            <h2 className={`${FONT_DISPLAY} text-4xl md:text-5xl text-[#F2EFE9] mt-1 leading-[1.08]`}>
+              Fastest route vs. <span className="text-[#E59518]">Healthiest route.</span>
             </h2>
-            <p className="mt-4 text-base md:text-lg text-zinc-400 leading-relaxed">
+            <p className="mt-3 text-base md:text-lg text-[#A39E93] leading-relaxed">
               Standard navigation optimizes solely for travel time, routing vehicles directly across severe axle-breaking
               craters. RoadWatch maps real-time hazard reports to compute road condition health scores for safer transit.
             </p>
           </div>
         </Reveal>
 
-        {/* Demo Waypoint Banner */}
+        {/* TASK 2: Editable Location Inputs & Route Comparison Form */}
         <Reveal delay={100} className="mt-10">
-          <div className="glass rounded-xl p-4 border border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs md:text-sm">
-            <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-              <div className="flex items-center gap-2 text-zinc-300">
-                <span className="text-zinc-500 font-mono">FROM:</span>
-                <strong className="text-white">DLF Cyber City Phase II</strong>
-                <ArrowRight size={14} className="text-amber-400" />
-                <span className="text-zinc-500 font-mono">TO:</span>
-                <strong className="text-white">Subhash Chowk, Sohna Road</strong>
+          <form
+            onSubmit={handleCompare}
+            className="rounded-2xl p-4 md:p-5 border border-white/[0.08] bg-[#141416]/95 backdrop-blur-md shadow-lg"
+            data-testid="route-search-form"
+          >
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
+              
+              {/* Origin Field */}
+              <div className="flex-1 relative">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#3EA370] pointer-events-none">
+                  <MapPin size={17} weight="fill" />
+                </div>
+                <input
+                  type="text"
+                  value={fromInput}
+                  onChange={(e) => {
+                    setFromInput(e.target.value);
+                    if (errorMessage) setErrorMessage("");
+                  }}
+                  placeholder="Origin (e.g. DLF Cyber City)"
+                  data-testid="route-input-from"
+                  className="w-full bg-[#0E0E10] border border-white/[0.08] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#F2EFE9] placeholder-[#78736A] focus:outline-none focus:border-[#E59518]/60 transition-colors"
+                />
+              </div>
+
+              <div className="hidden md:flex items-center text-[#78736A]">
+                <ArrowRight size={16} />
+              </div>
+
+              {/* Destination Field */}
+              <div className="flex-1 relative">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#E59518] pointer-events-none">
+                  <MapPin size={17} weight="fill" />
+                </div>
+                <input
+                  type="text"
+                  value={toInput}
+                  onChange={(e) => {
+                    setToInput(e.target.value);
+                    if (errorMessage) setErrorMessage("");
+                  }}
+                  placeholder="Destination (e.g. Subhash Chowk)"
+                  data-testid="route-input-to"
+                  className="w-full bg-[#0E0E10] border border-white/[0.08] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#F2EFE9] placeholder-[#78736A] focus:outline-none focus:border-[#E59518]/60 transition-colors"
+                />
+              </div>
+
+              {/* Action Button */}
+              <button
+                type="submit"
+                disabled={!isFormValid || isCalculating}
+                data-testid="route-compare-btn"
+                className={`px-5 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all ${
+                  isFormValid && !isCalculating
+                    ? "bg-[#E59518] text-[#0E0E10] hover:bg-[#F0A632] cursor-pointer shadow-md shadow-[#E59518]/15"
+                    : "bg-white/[0.06] text-[#78736A] border border-white/[0.04] cursor-not-allowed"
+                }`}
+              >
+                <ArrowsClockwise size={16} className={isCalculating ? "animate-spin" : ""} />
+                <span>{isCalculating ? "Calculating..." : "Compare Routes"}</span>
+              </button>
+            </div>
+
+            {/* Validation Error Message */}
+            {errorMessage && (
+              <div className="mt-3 text-xs text-[#E5484D] font-mono flex items-center gap-1.5" data-testid="route-error-msg">
+                <WarningOctagon size={14} />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            {/* Quick suggested corridors */}
+            <div className="mt-3.5 pt-3 border-t border-white/[0.04] flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2 text-[#78736A] font-mono text-[11px]">
+                <span>POPULAR CORRIDORS:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFromInput("Sector 14 Civic Center");
+                    setToInput("Udyog Vihar Phase IV");
+                    setComparison(computeRouteComparison("Sector 14 Civic Center", "Udyog Vihar Phase IV"));
+                    setErrorMessage("");
+                  }}
+                  className="text-[#A39E93] hover:text-[#E59518] underline underline-offset-2 transition-colors cursor-pointer"
+                >
+                  Sector 14 → Udyog Vihar
+                </button>
+                <span>·</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFromInput("DLF Cyber City Phase II");
+                    setToInput("Subhash Chowk, Sohna Road");
+                    setComparison(computeRouteComparison("DLF Cyber City Phase II", "Subhash Chowk, Sohna Road"));
+                    setErrorMessage("");
+                  }}
+                  className="text-[#A39E93] hover:text-[#E59518] underline underline-offset-2 transition-colors cursor-pointer"
+                >
+                  Cyber City → Sohna Road
+                </button>
+              </div>
+
+              <div className="text-[11px] text-[#78736A] font-mono">
+                Real-time corridor telemetry active
               </div>
             </div>
-            <div className="flex items-center gap-2 text-zinc-400 font-mono text-[11px] bg-white/5 px-3 py-1 rounded-full border border-white/5">
-              <Info size={14} className="text-amber-400" />
-              Real-time corridor telemetry active
-            </div>
-          </div>
+          </form>
         </Reveal>
 
         {/* Side-by-Side Comparison Cards */}
@@ -129,9 +303,7 @@ export default function RouteHealthSection() {
                   onClick={() => setSelectedRoute(route.id)}
                   data-testid={`route-card-${route.id}`}
                   className={`rounded-2xl p-6 md:p-8 cursor-pointer transition-all duration-300 relative flex flex-col justify-between border ${
-                    isRec
-                      ? "border-amber-500/80 bg-[#16130D]/90 shadow-[0_10px_35px_rgba(245,158,11,0.12)]"
-                      : "border-white/10 bg-[#111114]/90 hover:border-white/20"
+                    route.borderStyle
                   } ${isSelected ? "scale-[1.01]" : ""}`}
                 >
                   {/* Top Badge */}
@@ -140,58 +312,58 @@ export default function RouteHealthSection() {
                       <span
                         className={`text-[11px] font-mono px-3 py-1 rounded-full tracking-wider font-semibold ${
                           isRec
-                            ? "bg-amber-500 text-black font-bold shadow-md shadow-amber-500/20"
-                            : "bg-white/10 text-zinc-300 border border-white/10"
+                            ? "bg-[#E59518] text-[#0E0E10] font-bold"
+                            : "bg-white/[0.06] text-[#A39E93] border border-white/[0.08]"
                         }`}
                       >
                         {route.badge}
                       </span>
-                      <span className="text-xs text-zinc-500 font-mono flex items-center gap-1">
+                      <span className="text-xs text-[#78736A] font-mono flex items-center gap-1">
                         <Path size={14} /> {route.distance}
                       </span>
                     </div>
 
-                    <h3 className={`${FONT_DISPLAY} text-xl md:text-2xl text-white font-bold leading-snug`}>
+                    <h3 className={`${FONT_DISPLAY} text-xl md:text-2xl text-[#F2EFE9] font-bold leading-snug`}>
                       {route.name}
                     </h3>
-                    <p className="mt-2 text-xs md:text-sm text-zinc-400 leading-relaxed">
+                    <p className="mt-2 text-xs md:text-sm text-[#A39E93] leading-relaxed">
                       {route.description}
                     </p>
                   </div>
 
                   {/* Core Metrics: ETA, Hazards, Health Score */}
-                  <div className="mt-6 pt-6 border-t border-white/10 grid grid-cols-3 gap-3">
+                  <div className="mt-6 pt-6 border-t border-white/[0.06] grid grid-cols-3 gap-3">
                     
                     {/* ETA */}
-                    <div className="p-3 rounded-xl bg-black/40 border border-white/5">
-                      <div className="flex items-center gap-1.5 text-zinc-500 text-[11px] font-mono">
-                        <Clock size={13} className="text-zinc-400" /> ETA
+                    <div className="p-3 rounded-xl bg-[#0E0E10]/80 border border-white/[0.05]">
+                      <div className="flex items-center gap-1.5 text-[#78736A] text-[11px] font-mono">
+                        <Clock size={13} className="text-[#A39E93]" /> ETA
                       </div>
-                      <div className="font-display font-black text-2xl text-white mt-1">
+                      <div className="font-display font-black text-2xl text-[#F2EFE9] mt-1">
                         {route.eta}
                       </div>
-                      <div className="text-[10px] text-zinc-500 mt-0.5">
+                      <div className="text-[10px] text-[#78736A] mt-0.5">
                         {isRec ? "+4m detour" : "Raw travel time"}
                       </div>
                     </div>
 
                     {/* Hazards Passed */}
-                    <div className="p-3 rounded-xl bg-black/40 border border-white/5">
-                      <div className="flex items-center gap-1.5 text-zinc-500 text-[11px] font-mono">
+                    <div className="p-3 rounded-xl bg-[#0E0E10]/80 border border-white/[0.05]">
+                      <div className="flex items-center gap-1.5 text-[#78736A] text-[11px] font-mono">
                         <WarningOctagon
                           size={13}
-                          className={isRec ? "text-emerald-400" : "text-red-400"}
+                          className={isRec ? "text-[#3EA370]" : "text-[#E5484D]"}
                         />{" "}
                         Hazards
                       </div>
                       <div
                         className={`font-display font-black text-2xl mt-1 ${
-                          isRec ? "text-emerald-400" : "text-red-400"
+                          isRec ? "text-[#3EA370]" : "text-[#E5484D]"
                         }`}
                       >
                         {route.hazardsCount}
                       </div>
-                      <div className="text-[10px] text-zinc-500 mt-0.5">
+                      <div className="text-[10px] text-[#78736A] mt-0.5">
                         {route.criticalHazards > 0 ? `${route.criticalHazards} severe craters` : "0 severe"}
                       </div>
                     </div>
@@ -200,14 +372,14 @@ export default function RouteHealthSection() {
                     <div
                       className="p-3 rounded-xl border relative overflow-hidden"
                       style={{
-                        backgroundColor: isRec ? "rgba(245, 158, 11, 0.08)" : "rgba(239, 68, 68, 0.08)",
-                        borderColor: isRec ? "rgba(245, 158, 11, 0.3)" : "rgba(239, 68, 68, 0.3)",
+                        backgroundColor: isRec ? "rgba(229, 149, 24, 0.08)" : "rgba(229, 72, 77, 0.08)",
+                        borderColor: isRec ? "rgba(229, 149, 24, 0.28)" : "rgba(229, 72, 77, 0.28)",
                       }}
                     >
-                      <div className="flex items-center gap-1.5 text-zinc-400 text-[11px] font-mono">
+                      <div className="flex items-center gap-1.5 text-[#A39E93] text-[11px] font-mono">
                         <ShieldCheck
                           size={13}
-                          className={isRec ? "text-amber-400" : "text-red-400"}
+                          className={isRec ? "text-[#E59518]" : "text-[#E5484D]"}
                         />{" "}
                         Health
                       </div>
@@ -216,9 +388,9 @@ export default function RouteHealthSection() {
                         style={{ color: route.scoreColor }}
                       >
                         <span>{route.score}</span>
-                        <span className="text-xs text-zinc-500 font-normal">/100</span>
+                        <span className="text-xs text-[#78736A] font-normal">/100</span>
                       </div>
-                      <div className="text-[10px] text-zinc-400 mt-0.5 font-medium">
+                      <div className="text-[10px] text-[#A39E93] mt-0.5 font-medium">
                         {isRec ? "Optimal Grade" : "Severe Stress"}
                       </div>
                     </div>
@@ -227,11 +399,11 @@ export default function RouteHealthSection() {
                   {/* Highlights checklist */}
                   <div className="mt-5 space-y-2 text-xs">
                     {route.highlights.map((h, i) => (
-                      <div key={i} className="flex items-center justify-between text-zinc-300 py-1 border-b border-white/5 last:border-0">
-                        <span className="text-zinc-400">{h.label}:</span>
+                      <div key={i} className="flex items-center justify-between text-[#A39E93] py-1 border-b border-white/[0.04] last:border-0">
+                        <span>{h.label}:</span>
                         <span
                           className={`font-mono font-medium ${
-                            isRec ? "text-amber-300" : "text-red-300"
+                            isRec ? "text-[#E59518]" : "text-[#F87171]"
                           }`}
                         >
                           {h.value}
@@ -244,8 +416,8 @@ export default function RouteHealthSection() {
                   <div
                     className={`mt-6 p-3.5 rounded-xl text-xs flex items-start gap-2.5 ${
                       isRec
-                        ? "bg-amber-500/10 text-amber-200 border border-amber-500/25"
-                        : "bg-red-500/10 text-red-300 border border-red-500/25"
+                        ? "bg-[#E59518]/10 text-[#F2EFE9] border border-[#E59518]/25"
+                        : "bg-[#E5484D]/10 text-[#F87171] border border-[#E5484D]/25"
                     }`}
                   >
                     <Truck size={18} className="shrink-0 mt-0.5" />
@@ -260,40 +432,39 @@ export default function RouteHealthSection() {
           </div>
         </Reveal>
 
-        {/* Visual Route Corridor Map Preview */}
+        {/* Visual Route Corridor Schematic */}
         <Reveal delay={300} className="mt-8">
-          <div className="rounded-2xl border border-white/10 bg-[#0E0E11] p-6 relative overflow-hidden">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#141416]/95 p-6 relative overflow-hidden">
             <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
               <div className="flex items-center gap-2">
-                <Car size={18} className="text-amber-400" />
-                <h4 className={`${FONT_DISPLAY} text-base md:text-lg text-white font-bold`}>
+                <Car size={18} className="text-[#E59518]" />
+                <h4 className={`${FONT_DISPLAY} text-base md:text-lg text-[#F2EFE9] font-bold`}>
                   Live Corridor Telemetry Comparison
                 </h4>
               </div>
               <div className="flex items-center gap-4 text-xs font-mono">
-                <span className="flex items-center gap-1.5 text-red-400">
-                  <span className="w-3 h-0.5 bg-red-500 inline-block" /> Fastest (14 hazards)
+                <span className="flex items-center gap-1.5 text-[#F87171]">
+                  <span className="w-3 h-0.5 bg-[#E5484D] inline-block" /> Fastest ({comparison.fastest.hazardsCount} hazards)
                 </span>
-                <span className="flex items-center gap-1.5 text-amber-400">
-                  <span className="w-3 h-0.5 bg-amber-400 inline-block" /> Recommended (2 hazards)
+                <span className="flex items-center gap-1.5 text-[#E59518]">
+                  <span className="w-3 h-0.5 bg-[#E59518] inline-block" /> Recommended ({comparison.recommended.hazardsCount} hazards)
                 </span>
               </div>
             </div>
 
             {/* SVG Corridor Schematic */}
-            <div className="w-full h-36 md:h-44 bg-[#070709] rounded-xl border border-white/5 relative p-4 flex items-center justify-center">
+            <div className="w-full h-36 md:h-44 bg-[#0A0A0C] rounded-xl border border-white/[0.04] relative p-4 flex items-center justify-center">
               <svg className="w-full h-full" viewBox="0 0 800 160" fill="none" preserveAspectRatio="none">
-                {/* Grid guidelines */}
-                <line x1="0" y1="80" x2="800" y2="80" stroke="rgba(255,255,255,0.05)" strokeDasharray="4 4" />
-                <line x1="200" y1="0" x2="200" y2="160" stroke="rgba(255,255,255,0.03)" />
-                <line x1="400" y1="0" x2="400" y2="160" stroke="rgba(255,255,255,0.03)" />
-                <line x1="600" y1="0" x2="600" y2="160" stroke="rgba(255,255,255,0.03)" />
+                <line x1="0" y1="80" x2="800" y2="80" stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" />
+                <line x1="200" y1="0" x2="200" y2="160" stroke="rgba(255,255,255,0.02)" />
+                <line x1="400" y1="0" x2="400" y2="160" stroke="rgba(255,255,255,0.02)" />
+                <line x1="600" y1="0" x2="600" y2="160" stroke="rgba(255,255,255,0.02)" />
 
-                {/* Fastest Route Path (Red, cuts directly through crater clusters) */}
+                {/* Fastest Route Path (Red, cuts directly through hazards) */}
                 <path
                   d="M 50 80 C 220 50, 380 40, 520 70 C 620 90, 700 80, 750 80"
-                  stroke="#EF4444"
-                  strokeWidth="3.5"
+                  stroke="#E5484D"
+                  strokeWidth="3"
                   strokeDasharray="6 6"
                   opacity="0.85"
                 />
@@ -301,53 +472,56 @@ export default function RouteHealthSection() {
                 {/* Recommended Route Path (Amber, smooth loop around hazards) */}
                 <path
                   d="M 50 80 C 180 130, 360 135, 540 120 C 650 110, 700 85, 750 80"
-                  stroke="#F59E0B"
-                  strokeWidth="4"
+                  stroke="#E59518"
+                  strokeWidth="3.5"
                   className="rw-route-dash"
-                  filter="drop-shadow(0 0 6px rgba(245,158,11,0.6))"
                 />
 
                 {/* Hazard Markers on Fastest Path */}
-                <circle cx="210" cy="56" r="6" fill="#EF4444" />
-                <circle cx="210" cy="56" r="10" stroke="#EF4444" strokeWidth="1.5" opacity="0.6" />
+                <circle cx="210" cy="56" r="5" fill="#E5484D" />
+                <circle cx="210" cy="56" r="9" stroke="#E5484D" strokeWidth="1.2" opacity="0.6" />
                 <text x="210" y="42" fill="#F87171" fontSize="10" textAnchor="middle" fontFamily="monospace">Pothole</text>
 
-                <circle cx="340" cy="46" r="7" fill="#EF4444" />
-                <circle cx="340" cy="46" r="12" stroke="#EF4444" strokeWidth="1.5" opacity="0.6" />
+                <circle cx="340" cy="46" r="6" fill="#E5484D" />
+                <circle cx="340" cy="46" r="10" stroke="#E5484D" strokeWidth="1.2" opacity="0.6" />
                 <text x="340" y="30" fill="#F87171" fontSize="10" textAnchor="middle" fontFamily="monospace">Waterlog</text>
 
-                <circle cx="480" cy="62" r="6" fill="#EF4444" />
-                <circle cx="480" cy="62" r="10" stroke="#EF4444" strokeWidth="1.5" opacity="0.6" />
+                <circle cx="480" cy="62" r="5" fill="#E5484D" />
+                <circle cx="480" cy="62" r="9" stroke="#E5484D" strokeWidth="1.2" opacity="0.6" />
                 <text x="480" y="48" fill="#F87171" fontSize="10" textAnchor="middle" fontFamily="monospace">Crater</text>
 
                 {/* Origin Marker */}
-                <circle cx="50" cy="80" r="8" fill="#10B981" />
-                <circle cx="50" cy="80" r="14" stroke="#10B981" strokeWidth="2" opacity="0.4" />
-                <text x="50" y="110" fill="#34D399" fontSize="11" textAnchor="middle" fontWeight="bold">Cyber City</text>
+                <circle cx="50" cy="80" r="7" fill="#3EA370" />
+                <circle cx="50" cy="80" r="12" stroke="#3EA370" strokeWidth="1.5" opacity="0.4" />
+                <text x="50" y="110" fill="#5BAE85" fontSize="10" textAnchor="middle" fontWeight="bold">
+                  {comparison.fromName.slice(0, 16)}
+                </text>
 
                 {/* Destination Marker */}
-                <circle cx="750" cy="80" r="8" fill="#F59E0B" />
-                <circle cx="750" cy="80" r="14" stroke="#F59E0B" strokeWidth="2" opacity="0.4" />
-                <text x="750" y="110" fill="#FDE68A" fontSize="11" textAnchor="middle" fontWeight="bold">Sohna Rd</text>
+                <circle cx="750" cy="80" r="7" fill="#E59518" />
+                <circle cx="750" cy="80" r="12" stroke="#E59518" strokeWidth="1.5" opacity="0.4" />
+                <text x="750" y="110" fill="#F0A632" fontSize="10" textAnchor="middle" fontWeight="bold">
+                  {comparison.toName.slice(0, 16)}
+                </text>
               </svg>
             </div>
 
             {/* Bottom fleet explanation quote as required by prompt */}
-            <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between flex-wrap gap-2 text-xs md:text-sm text-zinc-300">
+            <div className="mt-4 pt-4 border-t border-white/[0.04] flex items-center justify-between flex-wrap gap-2 text-xs md:text-sm text-[#A39E93]">
               <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                <p className="italic text-zinc-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#E59518]" />
+                <p className="italic text-[#F2EFE9]/90">
                   "Delivery fleets can route around reported hazards, cutting vehicle damage and delay."
                 </p>
               </div>
-              <span className="font-mono text-[11px] text-amber-400/90">
+              <span className="font-mono text-[11px] text-[#E59518]/90">
                 Avg. Fleet Savings: ₹14,200 / vehicle / quarter
               </span>
             </div>
           </div>
         </Reveal>
 
-        {/* Section bottom dashed amber lane divider as required */}
+        {/* Section bottom dashed amber lane divider */}
         <div className="rw-lane mt-20" />
       </div>
     </section>

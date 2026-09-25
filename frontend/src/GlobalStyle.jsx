@@ -2,7 +2,7 @@ import React from "react";
 
 /**
  * GlobalStyle injects CSS keyframes, road lane dividers, and utilities.
- * Keeps animations pure CSS (no Framer Motion overhead).
+ * Keeps animations pure CSS with subtle, realistic glow values (not over-saturated orbs).
  */
 export default function GlobalStyle() {
   return (
@@ -10,24 +10,24 @@ export default function GlobalStyle() {
       /* Highway Dashed Amber Divider (.rw-lane) */
       .rw-lane {
         width: 100%;
-        height: 2px;
+        height: 1px;
         background: repeating-linear-gradient(
           90deg,
-          #F59E0B 0,
-          #F59E0B 16px,
+          rgba(229, 149, 24, 0.35) 0,
+          rgba(229, 149, 24, 0.35) 16px,
           transparent 16px,
           transparent 32px
         );
-        opacity: 0.35;
+        opacity: 0.85;
       }
 
-      /* Subtle pulse & glow animations */
+      /* Subtle pulse & indicator glow (restrained by 60% for realism) */
       @keyframes rw-pulse-glow {
         0%, 100% {
-          box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
+          box-shadow: 0 0 6px rgba(229, 149, 24, 0.15);
         }
         50% {
-          box-shadow: 0 0 25px rgba(245, 158, 11, 0.55);
+          box-shadow: 0 0 12px rgba(229, 149, 24, 0.28);
         }
       }
 

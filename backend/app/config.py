@@ -83,18 +83,29 @@ DEMO_ADMINS = [
         "password": os.getenv("DEMO_ADMIN_NHAI_PASS", "Nhai@Secure2026!"),
         "name": "NHAI Highway Director",
         "authority": "NHAI",
+        "department": "NHAI Corridor Division",
     },
     {
         "email": "admin.mcd@roadwatch.demo",
         "password": os.getenv("DEMO_ADMIN_MCD_PASS", "Mcd@CivicSafe2026!"),
         "name": "MCD Municipal Commissioner",
         "authority": "MCD",
+        "department": "MCD Urban Infrastructure",
     },
     {
         "email": "admin.pwd@roadwatch.demo",
         "password": os.getenv("DEMO_ADMIN_PWD_PASS", "Pwd@BuildClean2026!"),
         "name": "PWD Executive Engineer",
         "authority": "PWD",
+        "department": "PWD State Roads",
+    },
+    {
+        "email": "demo.admin@roadwatch.gov.in",
+        "password": os.getenv("DEMO_ADMIN_PASSWORD", "RoadWatch@Demo2026"),
+        "name": "Demo Administrator",
+        "authority": "NHAI",
+        "department": "NHAI National Corridor Command",
+        "invite_code": "NHAI-CORRIDOR-DEMO01",
     },
 ]
 
