@@ -58,17 +58,30 @@ export default function DarkMap({
         />
 
         {onPick && <ClickHandler onPick={onPick} />}
-        {pickedMarker && (
-          <Marker position={[pickedMarker.lat, pickedMarker.lng]} icon={iconCritical}>
-            <Popup>
-              <div className="font-sans text-xs p-1">
-                <strong className="text-[#12304A]">Selected GPS Point</strong>
-              </div>
-            </Popup>
-          </Marker>
-        )}
-        {markers.map((m, i) => (
-          <Marker key={m.id || i} position={[m.latitude, m.longitude]} icon={pickIcon(m)}>
+        {pickedMarker &&
+          typeof pickedMarker.lat === "number" &&
+          typeof pickedMarker.lng === "number" &&
+          !isNaN(pickedMarker.lat) &&
+          !isNaN(pickedMarker.lng) && (
+            <Marker position={[pickedMarker.lat, pickedMarker.lng]} icon={iconCritical}>
+              <Popup>
+                <div className="font-sans text-xs p-1">
+                  <strong className="text-[#12304A]">Selected GPS Point</strong>
+                </div>
+              </Popup>
+            </Marker>
+          )}
+        {markers
+          .filter(
+            (m) =>
+              m &&
+              typeof m.latitude === "number" &&
+              typeof m.longitude === "number" &&
+              !isNaN(m.latitude) &&
+              !isNaN(m.longitude)
+          )
+          .map((m, i) => (
+            <Marker key={m.id || i} position={[m.latitude, m.longitude]} icon={pickIcon(m)}>
             <Popup>
               <div style={{ fontFamily: "'Inter', system-ui, sans-serif", minWidth: 200, padding: "2px" }}>
                 <div className="flex items-center justify-between gap-2 mb-1">

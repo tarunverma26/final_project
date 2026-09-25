@@ -1,9 +1,9 @@
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-export const API = `${BACKEND_URL}/api`;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+export const API = BACKEND_URL ? `${BACKEND_URL}/api` : "/api";
 
-export const api = axios.create({ baseURL: API });
+export const api = axios.create({ baseURL: API, timeout: 15000 });
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("rw_token");
@@ -14,17 +14,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const url = error.config?.url || "";
-    const isAuthEndpoint = url.includes("/auth/login") || url.includes("/auth/register");
-    if (error.response?.status === 401 && !isAuthEndpoint) {
+    if (error.response?.status === 401) {
       localStorage.removeItem("rw_token");
-      if (
-        typeof window !== "undefined" &&
-        window.location.pathname !== "/login" &&
-        window.location.pathname !== "/register"
-      ) {
-        window.location.href = "/login";
-      }
     }
     return Promise.reject(error);
   }
