@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-import WeatherAtmosphere from "@/components/WeatherAtmosphere";
+import RainLayer from "@/components/RainLayer";
 import DarkMap from "@/components/DarkMap";
 import { api } from "@/lib/api";
 import {
@@ -62,15 +62,15 @@ const DEMO_ROAD_PROFILE = {
 function InfoField({ label, value, fallback = "Data unavailable" }) {
   const hasValue = value !== null && value !== undefined && value !== "";
   return (
-    <div className="rounded-xl bg-white border border-[#E2E8F0] p-4 shadow-2xs">
-      <div className="text-[11px] font-mono uppercase tracking-wider text-[#64748B] font-semibold">
+    <div className="rounded-xl bg-black/40 border border-white/5 p-4 shadow-sm">
+      <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 font-semibold">
         {label}
       </div>
-      <div className="mt-1 text-sm font-semibold text-[#12304A]">
+      <div className="mt-1 text-sm font-semibold text-white">
         {hasValue ? (
           value
         ) : (
-          <span className="text-xs font-mono font-medium text-slate-400 italic bg-slate-100 px-2 py-0.5 rounded">
+          <span className="text-xs font-mono font-medium text-zinc-500 italic bg-white/5 px-2 py-0.5 rounded">
             {fallback}
           </span>
         )}
@@ -85,7 +85,6 @@ export default function RoadProfile() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // If an id parameter is present, attempt live fetch with fallback
     if (id && id !== "NH-48") {
       setLoading(true);
       api
@@ -101,41 +100,42 @@ export default function RoadProfile() {
   }, [id]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] relative selection:bg-[#F97316] selection:text-white">
+    <div className="min-h-screen asphalt-bg text-zinc-100 relative selection:bg-amber-500 selection:text-black">
       <Navbar />
-      <WeatherAtmosphere rainCount={20} showClouds={true} showSun={true} />
+      <RainLayer count={25} />
+      <div className="road-lane opacity-20" />
 
       <main className="max-w-7xl mx-auto px-6 pt-32 pb-24 relative z-10">
         
         {/* Navigation Breadcrumbs */}
-        <div className="flex items-center gap-2 text-xs font-mono text-[#64748B] mb-6">
-          <Link to="/" className="hover:text-[#F97316] transition-colors">Home</Link>
+        <div className="flex items-center gap-2 text-xs font-mono text-zinc-400 mb-6">
+          <Link to="/" className="hover:text-amber-400 transition-colors">Home</Link>
           <span>/</span>
-          <Link to="/identify" className="hover:text-[#F97316] transition-colors">Identify Road</Link>
+          <Link to="/identify" className="hover:text-amber-400 transition-colors">Identify Road</Link>
           <span>/</span>
-          <span className="text-[#12304A] font-bold">{profile.road_number || "Profile"}</span>
+          <span className="text-amber-400 font-bold">{profile.road_number || "Profile"}</span>
         </div>
 
         {/* Header Hero Banner */}
-        <div className="rounded-3xl border border-[#E2E8F0] bg-white p-6 md:p-10 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-orange-100/50 via-teal-50/30 to-transparent pointer-events-none rounded-bl-full" />
+        <div className="rounded-3xl border border-white/10 glass bg-[#111114]/90 p-6 md:p-10 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-amber-500/10 via-amber-500/5 to-transparent pointer-events-none rounded-bl-full" />
           
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#2563EB] text-xs font-mono font-bold mb-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono font-bold mb-3">
                 <Buildings size={14} />
                 <span>{profile.authority} JURISDICTION · PUBLIC CORRIDOR PROFILE</span>
               </div>
-              <h1 className="font-display font-extrabold text-3xl md:text-5xl text-[#12304A] tracking-tight">
+              <h1 className="font-display font-black text-3xl md:text-5xl text-white tracking-tight">
                 {profile.road_name}
               </h1>
-              <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-[#64748B]">
-                <span className="font-mono font-bold text-[#F97316] bg-orange-50 border border-orange-200 px-2.5 py-0.5 rounded-lg">
+              <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-zinc-400">
+                <span className="font-mono font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded-lg">
                   {profile.road_number}
                 </span>
                 <span>·</span>
                 <span className="flex items-center gap-1 font-medium">
-                  <MapPin size={16} className="text-[#EA580C]" />
+                  <MapPin size={16} className="text-amber-400" />
                   {profile.location}, {profile.district} ({profile.state})
                 </span>
               </div>
@@ -145,16 +145,16 @@ export default function RoadProfile() {
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 to={`/report?road=${encodeURIComponent(profile.road_name)}`}
-                className="px-5 py-3 rounded-xl bg-[#F97316] hover:bg-[#EA580C] text-white font-semibold transition-all inline-flex items-center gap-2 shadow-sm hover:shadow"
+                className="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-semibold transition-all inline-flex items-center gap-2 shadow-lg shadow-amber-500/20"
               >
                 <WarningOctagon size={18} weight="bold" />
                 <span>Report Problem on this Road</span>
               </Link>
               <Link
                 to="/map"
-                className="px-5 py-3 rounded-xl bg-white hover:bg-slate-50 text-[#12304A] border border-[#CBD5E1] hover:border-[#F97316] font-semibold transition-all inline-flex items-center gap-2 shadow-2xs"
+                className="px-5 py-3 rounded-xl glass hover:bg-white/10 text-white border border-white/20 font-semibold transition-all inline-flex items-center gap-2"
               >
-                <Compass size={18} weight="bold" className="text-[#0F766E]" />
+                <Compass size={18} weight="bold" className="text-amber-400" />
                 <span>View on Live Map</span>
               </Link>
             </div>
@@ -166,213 +166,221 @@ export default function RoadProfile() {
           
           {/* Column 1: Road Condition & Pavement Index */}
           <div className="space-y-6">
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-sm">
-              <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-4 mb-4">
-                <span className="text-xs font-mono uppercase tracking-wider font-bold text-[#0F766E]">
+            <div className="rounded-2xl border border-white/10 glass bg-[#111114]/90 p-6 shadow-xl">
+              <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+                <span className="text-xs font-mono uppercase tracking-wider font-bold text-amber-400">
                   PAVEMENT CONDITION INDEX (PCI)
                 </span>
-                <span className="text-[10px] font-mono bg-teal-50 text-[#0F766E] border border-teal-200 px-2 py-0.5 rounded font-semibold">
+                <span className="text-[10px] font-mono bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-semibold">
                   AUDIT 2026
                 </span>
               </div>
 
               <div className="flex items-center gap-5">
-                <div className="w-24 h-24 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col items-center justify-center shrink-0">
-                  <span className="font-display font-black text-4xl text-[#D97706]">{profile.condition_score}</span>
-                  <span className="text-[10px] font-mono font-bold text-[#D97706]">/ 100</span>
+                <div className="w-24 h-24 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col items-center justify-center shrink-0">
+                  <span className="font-display font-black text-3xl text-amber-400">
+                    {profile.condition_score}
+                  </span>
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase">out of 100</span>
                 </div>
                 <div>
-                  <div className="font-display font-bold text-lg text-[#12304A]">
+                  <div className="text-sm font-bold text-white leading-tight">
                     {profile.condition_status}
                   </div>
-                  <div className="text-xs text-[#64748B] mt-1 font-mono">
-                    Hazard density: <strong className="text-[#DC2626]">{profile.pothole_density}</strong>
+                  <div className="text-xs text-zinc-400 mt-1">
+                    Defect density: <span className="font-mono text-white">{profile.pothole_density}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-5 space-y-2.5 pt-4 border-t border-[#F1F5F9] text-xs">
-                <div className="flex justify-between">
-                  <span className="text-[#64748B]">Surface Type:</span>
-                  <span className="font-semibold text-[#12304A]">{profile.surface}</span>
+              {/* PCI Gauge Progress Bar */}
+              <div className="mt-5">
+                <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    className="h-full bg-amber-400 rounded-full transition-all duration-1000"
+                    style={{ width: `${profile.condition_score}%` }}
+                  />
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-[#64748B]">Lane Configuration:</span>
-                  <span className="font-semibold text-[#12304A]">{profile.lanes}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#64748B]">Last Overlay:</span>
-                  <span className="font-semibold text-[#12304A]">{profile.last_maintenance}</span>
+                <div className="flex justify-between text-[10px] font-mono text-zinc-500 mt-1.5">
+                  <span>0 Critical</span>
+                  <span>50 Moderate</span>
+                  <span>100 Pristine</span>
                 </div>
               </div>
             </div>
 
-            {/* Contractor Accountability & Warranty Card */}
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-sm">
-              <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#D97706] mb-3">
-                <HardHat size={17} weight="duotone" />
-                <span>EMPANELLED ROAD CONTRACTOR</span>
+            {/* Road Specifications Card */}
+            <div className="rounded-2xl border border-white/10 glass bg-[#111114]/90 p-6 shadow-xl">
+              <div className="text-xs font-mono uppercase tracking-wider font-bold text-amber-400 mb-4 pb-2 border-b border-white/5">
+                TECHNICAL CORRIDOR SPECS
               </div>
-              <h3 className="font-display text-xl font-bold text-[#12304A]">
-                {profile.contractor}
-              </h3>
-              <p className="text-xs text-[#64748B] mt-1 font-mono">
-                {profile.contractor_sla}
-              </p>
-
-              <div className="mt-4 p-3.5 rounded-xl bg-teal-50 border border-teal-200/80 text-xs">
-                <div className="font-bold text-[#0F766E] flex items-center gap-1.5">
-                  <ShieldCheck size={16} weight="fill" />
-                  <span>Defect Liability Period</span>
-                </div>
-                <div className="text-[#0F766E] mt-1 font-mono font-medium">
-                  {profile.warranty_period}
-                </div>
+              <div className="space-y-3">
+                <InfoField label="Carriageway Configuration" value={profile.lanes} />
+                <InfoField label="Surface Material" value={profile.surface} />
+                <InfoField label="Last Overhaul Year" value={profile.last_construction_year} />
+                <InfoField label="Recent Bituminous Overlay" value={profile.last_maintenance} />
               </div>
             </div>
           </div>
 
-          {/* Column 2: Public Funding, Tender & Complaints */}
+          {/* Column 2: Contractor & SLA Accountability */}
           <div className="space-y-6">
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-sm">
-              <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-4 mb-4">
-                <span className="text-xs font-mono uppercase tracking-wider font-bold text-[#12304A]">
-                  PUBLIC TENDER & CAPITAL FUNDING
+            <div className="rounded-2xl border border-white/10 glass bg-[#111114]/90 p-6 shadow-xl">
+              <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+                <span className="text-xs font-mono uppercase tracking-wider font-bold text-amber-400">
+                  CONTRACTOR ACCOUNTABILITY
                 </span>
-                <span className="text-[10px] font-mono bg-emerald-50 text-[#16A34A] border border-emerald-200 px-2 py-0.5 rounded font-semibold">
-                  OPEN RECORD
+                <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-semibold">
+                  ACTIVE SLA
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="text-[10px] font-mono text-[#64748B] uppercase font-bold">BUDGET SANCTIONED</div>
-                  <div className="font-display font-extrabold text-xl text-[#12304A] mt-1">
-                    {profile.budget_allocated}
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                  <HardHat size={20} weight="duotone" />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-base text-white">
+                    {profile.contractor}
+                  </h3>
+                  <div className="text-xs text-zinc-400 mt-0.5">Primary Maintenance Concessionaire</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mt-5">
+                <div className="rounded-xl bg-black/40 border border-white/5 p-3">
+                  <div className="text-[10px] font-mono text-zinc-500 uppercase">SLA COMPLIANCE</div>
+                  <div className="font-display font-bold text-lg text-emerald-400 mt-0.5">
+                    {profile.contractor_sla}
                   </div>
                 </div>
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="text-[10px] font-mono text-[#64748B] uppercase font-bold">DISBURSED TO DATE</div>
-                  <div className="font-display font-extrabold text-xl text-[#0F766E] mt-1">
-                    {profile.budget_disbursed}
+                <div className="rounded-xl bg-black/40 border border-white/5 p-3">
+                  <div className="text-[10px] font-mono text-zinc-500 uppercase">DEFECT LIABILITY</div>
+                  <div className="font-display font-bold text-sm text-white mt-1">
+                    {profile.warranty_period}
                   </div>
                 </div>
               </div>
 
-              <div className="mt-4 space-y-2 text-xs font-mono text-[#64748B] pt-3 border-t border-[#F1F5F9]">
-                <div className="flex justify-between">
-                  <span>Tender No:</span>
-                  <span className="font-bold text-[#12304A]">{profile.tender_ref}</span>
+              {/* Public Funding & Tender Record */}
+              <div className="mt-5 pt-4 border-t border-white/5 space-y-3">
+                <div className="text-xs font-mono font-bold text-zinc-400 uppercase">
+                  PUBLIC TENDER ALLOCATION
                 </div>
-                <div className="flex justify-between">
-                  <span>CAG Audit:</span>
-                  <span className="font-bold text-[#16A34A]">{profile.audit_status}</span>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-zinc-500">Allocated Maintenance Budget:</span>
+                  <span className="font-mono font-bold text-white">{profile.budget_allocated}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-zinc-500">Disbursed Expenditure:</span>
+                  <span className="font-mono font-bold text-amber-400">{profile.budget_disbursed}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-zinc-500">Tender Reference ID:</span>
+                  <span className="font-mono text-zinc-300">{profile.tender_ref}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono mt-1">
+                  <ShieldCheck size={14} weight="fill" />
+                  <span>{profile.audit_status}</span>
                 </div>
               </div>
             </div>
 
-            {/* Complaint Velocity Stats */}
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-mono uppercase tracking-wider font-bold text-[#12304A]">
-                  CITIZEN COMPLAINT REGISTRY
-                </span>
-                <Link to="/tracking/RW-10234" className="text-xs text-[#F97316] font-mono font-semibold hover:underline">
-                  Track #RW-10234 →
-                </Link>
+            {/* Upcoming Maintenance Events */}
+            <div className="rounded-2xl border border-white/10 glass bg-[#111114]/90 p-6 shadow-xl">
+              <div className="text-xs font-mono uppercase tracking-wider font-bold text-amber-400 mb-4 pb-2 border-b border-white/5 flex items-center justify-between">
+                <span>SCHEDULED ROADWORKS</span>
+                <span className="text-[10px] font-mono text-zinc-500">MUNICIPAL ADVISORY</span>
               </div>
-
-              <div className="grid grid-cols-3 gap-2 text-center py-2">
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="text-[10px] font-mono text-[#64748B] font-bold">TOTAL</div>
-                  <div className="font-display font-bold text-2xl text-[#12304A] mt-0.5">{profile.total_complaints}</div>
-                </div>
-                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-                  <div className="text-[10px] font-mono text-[#16A34A] font-bold">RESOLVED</div>
-                  <div className="font-display font-bold text-2xl text-[#16A34A] mt-0.5">{profile.resolved_complaints}</div>
-                </div>
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
-                  <div className="text-[10px] font-mono text-[#D97706] font-bold">ACTIVE</div>
-                  <div className="font-display font-bold text-2xl text-[#D97706] mt-0.5">{profile.active_complaints}</div>
-                </div>
-              </div>
-
-              {/* Active Breakdown list */}
-              <div className="mt-4 pt-3 border-t border-[#F1F5F9] space-y-2">
-                <div className="text-[11px] font-mono font-bold text-[#64748B] uppercase">OPEN DEFECT BREAKDOWN:</div>
-                {profile.active_breakdown.map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-xs font-medium p-2 rounded-lg bg-slate-50 border border-slate-200/80">
-                    <span className="text-[#12304A]">{item.type}</span>
-                    <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-red-100 text-red-700">
-                      {item.count} Active
-                    </span>
+              <div className="space-y-3">
+                {profile.upcoming_events.map((evt, i) => (
+                  <div key={i} className="p-3 rounded-xl bg-black/40 border border-white/5">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="font-bold text-xs text-white line-clamp-1">{evt.title}</span>
+                      <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                        {evt.status}
+                      </span>
+                    </div>
+                    <div className="text-xs text-zinc-400 flex items-center gap-1 mt-1">
+                      <Calendar size={13} className="text-amber-400" />
+                      <span>{evt.date}</span>
+                    </div>
+                    <div className="text-[11px] text-amber-400/90 mt-1 flex items-center gap-1">
+                      <Clock size={12} />
+                      <span>{evt.impact}</span>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Column 3: Scheduled Municipal Events & Closures */}
+          {/* Column 3: Live Complaints Telemetry & Map Context */}
           <div className="space-y-6">
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-sm">
-              <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-4 mb-4">
-                <span className="text-xs font-mono uppercase tracking-wider font-bold text-[#12304A]">
-                  SCHEDULED ROADWORKS & EVENTS
+            <div className="rounded-2xl border border-white/10 glass bg-[#111114]/90 p-6 shadow-xl">
+              <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+                <span className="text-xs font-mono uppercase tracking-wider font-bold text-amber-400">
+                  CITIZEN COMPLAINT TELEMETRY
                 </span>
-                <Calendar size={18} className="text-[#0F766E]" />
+                <span className="text-[10px] font-mono bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-semibold">
+                  LIVE
+                </span>
               </div>
 
-              <div className="space-y-4">
-                {profile.upcoming_events.map((evt, idx) => (
-                  <div key={idx} className="p-4 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-50 text-[#2563EB] border border-blue-200">
-                        {evt.status}
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="p-3 rounded-xl bg-black/40 border border-white/5">
+                  <div className="text-[10px] font-mono text-zinc-500">TOTAL</div>
+                  <div className="font-display font-bold text-xl text-white mt-0.5">
+                    {profile.total_complaints}
+                  </div>
+                </div>
+                <div className="p-3 rounded-xl bg-black/40 border border-white/5">
+                  <div className="text-[10px] font-mono text-zinc-500">RESOLVED</div>
+                  <div className="font-display font-bold text-xl text-emerald-400 mt-0.5">
+                    {profile.resolved_complaints}
+                  </div>
+                </div>
+                <div className="p-3 rounded-xl bg-black/40 border border-white/5">
+                  <div className="text-[10px] font-mono text-zinc-500">ACTIVE</div>
+                  <div className="font-display font-bold text-xl text-red-400 mt-0.5">
+                    {profile.active_complaints}
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Issues Breakdown */}
+              <div className="mt-5 space-y-2">
+                <div className="text-xs font-mono text-zinc-400 mb-2">ACTIVE CORRIDOR ISSUES:</div>
+                {profile.active_breakdown.map((issue, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5 text-xs">
+                    <span className="text-zinc-200 font-medium">{issue.type}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-amber-400">{issue.count} open</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30">
+                        {issue.severity}
                       </span>
-                      <span className="text-xs font-mono text-[#64748B]">{evt.date}</span>
-                    </div>
-                    <div className="font-display font-bold text-sm text-[#12304A]">
-                      {evt.title}
-                    </div>
-                    <div className="text-xs text-[#EA580C] font-mono bg-orange-50 px-2.5 py-1 rounded border border-orange-200/60">
-                      {evt.impact}
                     </div>
                   </div>
                 ))}
               </div>
 
               <Link
-                to="/events"
-                className="mt-6 w-full py-2.5 rounded-xl border border-[#CBD5E1] hover:border-[#F97316] text-[#12304A] hover:text-[#F97316] text-xs font-mono font-semibold transition-colors flex items-center justify-center gap-1.5"
+                to="/map"
+                className="mt-5 w-full py-2.5 rounded-xl border border-white/10 glass hover:bg-white/10 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition"
               >
-                <span>View All Regional Municipal Events</span>
-                <ArrowRight size={14} />
+                <span>Inspect All Pin Markers on Map</span>
+                <ArrowRight size={13} />
               </Link>
             </div>
 
-            {/* Authority Verification Seal */}
-            <div className="rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-50/60 via-white to-teal-50/20 p-6 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#0F766E] flex items-center justify-center text-white shrink-0 shadow-xs">
-                  <ShieldCheck size={22} weight="bold" />
-                </div>
-                <div>
-                  <div className="font-display font-bold text-sm text-[#12304A]">
-                    {profile.authority_full}
-                  </div>
-                  <div className="text-xs text-[#0F766E] font-mono font-medium">
-                    Verified Digital Twin Registry
-                  </div>
-                </div>
+            {/* Dark Map Mini Preview */}
+            <div className="rounded-2xl border border-white/10 glass bg-[#111114]/90 p-3 shadow-xl overflow-hidden">
+              <div className="h-56 rounded-xl overflow-hidden relative">
+                <DarkMap center={[28.4595, 77.0266]} zoom={14} markers={[]} />
               </div>
-              <p className="text-xs text-[#64748B] mt-3 leading-relaxed">
-                Road specifications, pavement distress telemetry, and contractor defect liabilities are synchronized directly from OpenStreetMap and NHAI GIS databases.
-              </p>
             </div>
           </div>
-
         </div>
-
       </main>
     </div>
   );

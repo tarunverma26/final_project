@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { formatApiErrorDetail } from "@/lib/api";
-import WeatherAtmosphere from "@/components/WeatherAtmosphere";
+import RainLayer from "@/components/RainLayer";
 import {
   ShieldCheck,
   Eye,
@@ -66,33 +66,35 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#F8FAFC] overflow-hidden flex items-center justify-center p-6">
-      <WeatherAtmosphere rainCount={25} showClouds={true} showSun={true} />
+    <div className="relative min-h-screen asphalt-bg overflow-hidden flex items-center justify-center p-6 text-zinc-100">
+      <RainLayer count={30} />
+      <div className="headlight" />
+      <div className="road-lane opacity-20" />
 
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 w-full max-w-md p-8 rounded-2xl bg-white border border-[#E2E8F0] shadow-lg"
+        className="relative z-10 w-full max-w-md p-8 rounded-2xl glass border border-white/10 bg-[#111114]/90 shadow-2xl"
       >
-        {/* Breadcrumb: shield icon + / AUTHORITY ADMIN GATE in orange on white background */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold text-[#EA580C] bg-orange-50 border border-orange-200/80 mb-3">
-          <ShieldCheck size={16} weight="bold" className="text-[#F97316]" />
+        {/* Breadcrumb: shield icon + / AUTHORITY ADMIN GATE */}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold text-amber-300 bg-amber-500/10 border border-amber-500/30 mb-3">
+          <ShieldCheck size={16} weight="bold" className="text-amber-400" />
           <span>/ AUTHORITY ADMIN GATE</span>
         </div>
 
-        {/* Title: Administrator Login (navy, bold) */}
-        <h1 className="font-display font-extrabold text-3xl text-[#12304A]">
+        {/* Title: Administrator Login */}
+        <h1 className="font-display font-black text-3xl text-white">
           Administrator Login
         </h1>
 
-        {/* Subtitle in secondary text gray #64748B */}
-        <p className="text-sm text-[#64748B] mt-1.5 leading-relaxed">
+        {/* Subtitle */}
+        <p className="text-sm text-zinc-400 mt-1.5 leading-relaxed">
           Sign in to access the road department admin dashboard.
         </p>
 
         <form onSubmit={handleManualLogin} className="mt-6 space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-[#12304A] uppercase tracking-wider font-mono">
+            <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider font-mono">
               Official Email
             </label>
             <input
@@ -104,12 +106,12 @@ export default function AdminLogin() {
               }}
               placeholder="officer@nhai.gov.in"
               required
-              className="mt-1.5 w-full rounded-xl bg-white border border-[#E2E8F0] px-4 py-2.5 text-sm text-[#12304A] placeholder-[#94A3B8] focus:outline-none focus:border-[#F97316] focus:ring-2 focus:ring-orange-100 transition-all font-medium"
+              className="mt-1.5 w-full rounded-xl bg-black/50 border border-white/10 px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all font-medium"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#12304A] uppercase tracking-wider font-mono">
+            <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider font-mono">
               Password
             </label>
             <div className="relative mt-1.5">
@@ -122,12 +124,12 @@ export default function AdminLogin() {
                 }}
                 placeholder="••••••••••••"
                 required
-                className="w-full rounded-xl bg-white border border-[#E2E8F0] pl-4 pr-11 py-2.5 text-sm text-[#12304A] placeholder-[#94A3B8] focus:outline-none focus:border-[#F97316] focus:ring-2 focus:ring-orange-100 transition-all font-medium"
+                className="w-full rounded-xl bg-black/50 border border-white/10 pl-4 pr-11 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all font-medium"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-[#12304A] transition-colors p-1"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors p-1"
                 title={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeSlash size={16} /> : <Eye size={16} />}
@@ -136,17 +138,17 @@ export default function AdminLogin() {
           </div>
 
           {err && (
-            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-[#DC2626] flex items-start gap-2 font-medium">
-              <Warning size={16} className="shrink-0 mt-0.5" />
+            <div className="p-3 rounded-xl bg-red-950/60 border border-red-500/40 text-xs text-red-300 flex items-start gap-2 font-medium">
+              <Warning size={16} className="shrink-0 mt-0.5 text-red-400" />
               <span>{err}</span>
             </div>
           )}
 
-          {/* Primary CTA: Login → (orange filled button, full width) */}
+          {/* Primary CTA: Login */}
           <button
             type="submit"
             disabled={busy}
-            className="w-full py-3.5 rounded-xl bg-[#F97316] text-white font-semibold text-sm hover:bg-[#EA580C] disabled:opacity-50 flex items-center justify-center gap-2 transition-all duration-150 shadow-sm hover:shadow hover:-translate-y-0.5 cursor-pointer mt-2"
+            className="w-full py-3.5 rounded-xl bg-amber-500 text-black font-semibold text-sm hover:bg-amber-400 disabled:opacity-50 flex items-center justify-center gap-2 transition-all duration-150 shadow-lg shadow-amber-500/20 cursor-pointer mt-2"
           >
             {busy ? (
               <>
@@ -162,28 +164,28 @@ export default function AdminLogin() {
         </form>
 
         {/* Demo Admin Account option */}
-        <div className="mt-4 pt-4 border-t border-[#F1F5F9] space-y-3">
+        <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
           <button
             type="button"
             onClick={handleDemoLogin}
             disabled={busy}
-            className="w-full py-2.5 rounded-xl border border-[#12304A] text-[#12304A] hover:bg-slate-50 font-semibold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-2.5 rounded-xl border border-white/20 text-zinc-200 hover:bg-white/10 font-semibold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
           >
-            <Sparkle size={15} weight="fill" className="text-[#F97316]" />
+            <Sparkle size={15} weight="fill" className="text-amber-400" />
             <span>Use Demo Admin Account</span>
           </button>
 
-          {/* Small info banner beneath */}
-          <div className="text-[11px] text-[#0F766E] font-mono bg-teal-50/70 p-2.5 rounded-xl border border-teal-200 flex items-start gap-2">
-            <Info size={15} className="shrink-0 mt-0.5" />
+          {/* Info banner beneath */}
+          <div className="text-[11px] text-amber-300/90 font-mono bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 flex items-start gap-2">
+            <Info size={15} className="shrink-0 mt-0.5 text-amber-400" />
             <span>This demo account has read-only/sandboxed access for evaluation purposes.</span>
           </div>
         </div>
 
         {/* Footer linking back to Admin Signup */}
-        <div className="mt-6 text-center text-xs text-[#64748B] border-t border-[#F1F5F9] pt-4">
+        <div className="mt-6 text-center text-xs text-zinc-400 border-t border-white/10 pt-4">
           Don't have an account?{" "}
-          <Link to="/admin/register" className="text-[#F97316] hover:text-[#EA580C] hover:underline font-semibold">
+          <Link to="/admin/register" className="text-amber-400 hover:text-amber-300 hover:underline font-semibold">
             Sign up here
           </Link>
         </div>

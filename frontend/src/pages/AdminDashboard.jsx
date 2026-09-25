@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
-import WeatherAtmosphere from "@/components/WeatherAtmosphere";
+import RainLayer from "@/components/RainLayer";
 import { useAuth } from "@/context/AuthContext";
 import { api, formatApiErrorDetail } from "@/lib/api";
 import {
@@ -166,7 +166,7 @@ export default function AdminDashboard() {
       if (selectedIssue && selectedIssue.id === issueId) {
         setSelectedIssue(data);
       }
-      setSuccessToast(`Issue status updated to '${newStatus}'.`);
+      setSuccessToast(`Issue status moved to '${newStatus}'.`);
       setTimeout(() => setSuccessToast(""), 3000);
     } catch (err) {
       alert(formatApiErrorDetail(err.response?.data?.detail) || "Failed to update status.");
@@ -306,26 +306,23 @@ export default function AdminDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] relative selection:bg-[#F97316] selection:text-white pb-20">
+    <div className="asphalt-bg min-h-screen text-white pb-20">
       <Navbar />
-      <WeatherAtmosphere />
+      <RainLayer count={20} />
 
       <div className="max-w-7xl mx-auto px-6 pt-32 relative z-10">
         {/* Authority Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#E2E8F0]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/10">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200/80 mb-2">
-              <ShieldCheck size={16} weight="bold" className="text-[#EA580C]" />
-              <span className="text-[11px] font-mono tracking-widest text-[#EA580C] uppercase font-bold">
-                / AUTHORITY CONTROL ROOM
-              </span>
+            <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-amber-400 uppercase">
+              <ShieldCheck size={18} weight="bold" /> / AUTHORITY CONTROL ROOM
             </div>
-            <h1 className="font-display font-black text-3xl md:text-5xl text-[#12304A] tracking-tight mt-1">
+            <h1 className="font-display font-black text-3xl md:text-5xl mt-1">
               {user?.authority ? `${user.authority} Operations Portal` : "Administration Console"}
             </h1>
-            <p className="text-[#64748B] text-sm mt-1">
+            <p className="text-zinc-400 text-sm mt-1">
               Live complaint queue strictly routed to{" "}
-              <span className="text-[#EA580C] font-semibold">{user?.authority || "All Jurisdictions"}</span>.
+              <span className="text-amber-300 font-semibold">{user?.authority || "All Jurisdictions"}</span>.
             </p>
           </div>
 
@@ -333,12 +330,12 @@ export default function AdminDashboard() {
             <button
               onClick={loadIssues}
               disabled={loadingIssues}
-              className="px-4 py-2.5 rounded-xl bg-white border border-[#CBD5E1] hover:bg-slate-50 text-xs font-mono font-medium text-[#12304A] flex items-center gap-2 shadow-xs transition"
+              className="px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-mono flex items-center gap-2 transition"
             >
-              <ArrowClockwise className={loadingIssues ? "animate-spin text-[#EA580C]" : ""} size={14} />
+              <ArrowClockwise className={loadingIssues ? "animate-spin" : ""} size={14} />
               Refresh Queue
             </button>
-            <div className="px-4 py-2.5 rounded-xl bg-orange-50 border border-orange-200 text-[#EA580C] text-xs font-mono font-semibold flex items-center gap-2 shadow-xs">
+            <div className="px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono font-medium flex items-center gap-2">
               <Buildings size={16} />
               <span>{user?.authority || "SUPERADMIN"}</span>
             </div>
@@ -350,9 +347,9 @@ export default function AdminDashboard() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center gap-2 shadow-xs font-medium"
+            className="mt-4 p-4 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-sm flex items-center gap-2"
           >
-            <CheckCircle size={18} weight="bold" className="text-emerald-600" />
+            <CheckCircle size={18} weight="bold" />
             <span>{successToast}</span>
           </motion.div>
         )}
@@ -365,8 +362,8 @@ export default function AdminDashboard() {
               onClick={() => setFilterStatus(tab)}
               className={`px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-wider transition ${
                 filterStatus === tab
-                  ? "bg-[#F97316] text-white font-semibold shadow-sm"
-                  : "bg-white border border-[#CBD5E1] text-[#64748B] hover:text-[#12304A] hover:bg-slate-50 shadow-xs"
+                  ? "bg-amber-500 text-black font-semibold shadow-lg"
+                  : "bg-white/5 border border-white/5 text-zinc-400 hover:text-white hover:bg-white/10"
               }`}
             >
               {tab.replace("_", " ")} (
@@ -389,12 +386,12 @@ export default function AdminDashboard() {
         <div className="grid lg:grid-cols-3 gap-6 mt-6">
           <div className="lg:col-span-2 space-y-4">
             {loadingIssues ? (
-              <div className="p-12 text-center text-[#64748B] font-mono text-sm bg-white rounded-2xl border border-[#E2E8F0] shadow-sm">
-                <CircleNotch size={24} className="animate-spin mx-auto mb-2 text-[#EA580C]" />
+              <div className="p-12 text-center text-zinc-500 font-mono text-sm">
+                <CircleNotch size={24} className="animate-spin mx-auto mb-2 text-amber-400" />
                 Loading jurisdiction issues...
               </div>
             ) : filteredIssues.length === 0 ? (
-              <div className="p-12 rounded-2xl bg-white border border-[#E2E8F0] text-center text-[#64748B] font-mono text-sm shadow-sm">
+              <div className="p-12 rounded-2xl bg-[#111] border border-white/5 text-center text-zinc-500 font-mono text-sm">
                 No complaints found in this status category.
               </div>
             ) : (
@@ -402,40 +399,40 @@ export default function AdminDashboard() {
                 <div
                   key={issue.id}
                   onClick={() => setSelectedIssue(issue)}
-                  className={`p-5 rounded-2xl bg-white border transition cursor-pointer flex flex-col sm:flex-row gap-5 items-start shadow-sm ${
+                  className={`p-5 rounded-2xl bg-[#111] border transition cursor-pointer flex flex-col sm:flex-row gap-5 items-start ${
                     selectedIssue?.id === issue.id
-                      ? "border-[#F97316] ring-2 ring-[#F97316]/20 bg-orange-50/20"
-                      : "border-[#E2E8F0] hover:border-slate-300"
+                      ? "border-amber-500 bg-amber-500/[0.03]"
+                      : "border-white/5 hover:border-white/20"
                   }`}
                 >
                   <img
                     src={issue.photo_url || "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=400"}
                     alt={issue.category}
-                    className="w-full sm:w-36 h-28 object-cover rounded-xl shrink-0 border border-[#E2E8F0]"
+                    className="w-full sm:w-36 h-28 object-cover rounded-xl shrink-0 border border-white/10"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-display font-black text-lg text-[#12304A]">
+                      <span className="font-display font-black text-lg text-white">
                         {issue.category}
                       </span>
                       <StatusBadge status={issue.status} />
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-red-50 text-red-700 border border-red-200 font-medium">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-red-500/10 text-red-400 border border-red-500/20">
                         {issue.severity}
                       </span>
                     </div>
 
-                    <div className="text-xs text-[#64748B] font-mono mt-1 flex items-center gap-1.5 font-medium">
-                      <MapPin size={14} className="text-[#EA580C]" />
-                      <span className="truncate">{issue.road_name || "Unassigned road segment"}</span>
+                    <div className="text-xs text-zinc-400 font-mono mt-1 flex items-center gap-1.5">
+                      <MapPin size={13} className="text-amber-400" />
+                      <span className="truncate">{issue.road_name || "Unassigned segment"}</span>
                     </div>
 
-                    <p className="text-xs text-[#475569] mt-2 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-zinc-400 mt-2 line-clamp-2">
                       {issue.description || "Citizen reported road distress."}
                     </p>
 
-                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#E2E8F0] text-[11px] font-mono text-[#64748B]">
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5 text-[11px] font-mono text-zinc-500">
                       <span>Reported: {issue.created_at ? new Date(issue.created_at).toLocaleDateString() : "Recent"}</span>
-                      <span className="text-[#EA580C] font-semibold flex items-center gap-1">
+                      <span className="text-amber-400 flex items-center gap-1">
                         View details <CaretRight size={12} />
                       </span>
                     </div>
@@ -448,9 +445,9 @@ export default function AdminDashboard() {
           {/* Right Column: Selected Issue Inspection Panel */}
           <div>
             {selectedIssue ? (
-              <div className="rounded-2xl bg-white border border-[#E2E8F0] shadow-sm p-6 sticky top-28">
-                <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
-                  <span className="text-[11px] font-mono tracking-widest text-[#EA580C] uppercase font-bold">
+              <div className="rounded-2xl bg-[#111] border border-white/10 p-6 sticky top-28">
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <span className="text-[11px] font-mono tracking-widest text-amber-400 uppercase">
                     / INSPECTION DETAIL
                   </span>
                   <StatusBadge status={selectedIssue.status} />
@@ -460,67 +457,67 @@ export default function AdminDashboard() {
                   <img
                     src={selectedIssue.photo_url || "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600"}
                     alt={selectedIssue.category}
-                    className="w-full h-44 object-cover rounded-xl border border-[#E2E8F0] shadow-xs"
+                    className="w-full h-44 object-cover rounded-xl border border-white/10"
                   />
                 </div>
 
                 <div className="mt-4">
-                  <div className="font-display font-black text-xl text-[#12304A]">
+                  <div className="font-display font-black text-xl text-white">
                     {selectedIssue.category}
                   </div>
-                  <div className="text-xs font-mono text-[#EA580C] font-medium mt-0.5">
+                  <div className="text-xs font-mono text-amber-400 mt-0.5">
                     {selectedIssue.road_name || "Unnamed segment"}
                   </div>
-                  <p className="text-xs text-[#475569] mt-2 leading-relaxed">
+                  <p className="text-xs text-zinc-300 mt-2 leading-relaxed">
                     {selectedIssue.description || "No citizen remarks provided."}
                   </p>
                 </div>
 
-                <div className="mt-4 p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2 text-xs font-mono">
+                <div className="mt-4 p-3 rounded-xl bg-black/40 border border-white/5 space-y-2 text-xs font-mono">
                   <div className="flex justify-between">
-                    <span className="text-[#64748B]">Jurisdiction:</span>
-                    <span className="text-[#12304A] font-semibold">{selectedIssue.authority || "PWD"}</span>
+                    <span className="text-zinc-500">Jurisdiction:</span>
+                    <span className="text-white font-semibold">{selectedIssue.authority || "PWD"}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#64748B]">Coordinates:</span>
-                    <span className="text-[#EA580C] font-semibold">
+                    <span className="text-zinc-500">Coordinates:</span>
+                    <span className="text-amber-300">
                       {selectedIssue.latitude ? `${selectedIssue.latitude.toFixed(4)}, ${selectedIssue.longitude.toFixed(4)}` : "None"}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#64748B]">Reporter:</span>
-                    <span className="text-[#12304A] font-medium">{selectedIssue.user_name || "Citizen"}</span>
+                    <span className="text-zinc-500">Reporter:</span>
+                    <span className="text-white">{selectedIssue.user_name || "Citizen"}</span>
                   </div>
                 </div>
 
                 {/* Resolution Record (if resolved) */}
                 {selectedIssue.resolution && (
-                  <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200">
-                    <div className="text-xs font-mono text-emerald-800 font-bold flex items-center gap-1.5">
-                      <Sparkle size={14} weight="fill" className="text-emerald-600" /> Verified Resolution Record
+                  <div className="mt-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                    <div className="text-xs font-mono text-emerald-400 font-bold flex items-center gap-1.5">
+                      <Sparkle size={14} weight="fill" /> Verified Resolution Record
                     </div>
                     <img
                       src={selectedIssue.resolution.resolved_photo_url}
                       alt="Resolved proof"
-                      className="mt-2 w-full h-32 object-cover rounded-lg border border-emerald-300"
+                      className="mt-2 w-full h-32 object-cover rounded-lg border border-emerald-500/30"
                     />
-                    <p className="text-[11px] text-[#475569] mt-2 leading-relaxed font-sans">
+                    <p className="text-[11px] text-zinc-300 mt-2 leading-relaxed font-sans">
                       {selectedIssue.resolution.claude_verification?.reasoning}
                     </p>
-                    <div className="mt-2 text-[10px] font-mono text-emerald-700 font-medium">
+                    <div className="mt-2 text-[10px] font-mono text-emerald-400/80">
                       Audit confidence: {selectedIssue.resolution.claude_verification?.confidence}% · Dist: {selectedIssue.resolution.resolved_geotag?.distance_meters}m
                     </div>
                   </div>
                 )}
 
                 {/* Action Buttons */}
-                <div className="mt-6 space-y-2 pt-4 border-t border-[#E2E8F0]">
+                <div className="mt-6 space-y-2 pt-4 border-t border-white/10">
                   {selectedIssue.status !== "resolved" && (
                     <>
                       {selectedIssue.status !== "in_progress" && (
                         <button
                           onClick={() => updateStatus(selectedIssue.id, "in_progress")}
-                          className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-mono font-semibold text-[#12304A] flex items-center justify-center gap-2 transition"
+                          className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-mono font-medium flex items-center justify-center gap-2 transition"
                         >
                           <Clock size={16} /> Mark as In Progress
                         </button>
@@ -536,7 +533,7 @@ export default function AdminDashboard() {
                           setResolutionError("");
                           setVerificationResult(null);
                         }}
-                        className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center justify-center gap-2 transition shadow-md shadow-emerald-600/15"
+                        className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-semibold flex items-center justify-center gap-2 transition shadow-lg"
                       >
                         <CheckCircle size={18} weight="bold" /> Verify & Resolve Issue
                       </button>
@@ -545,7 +542,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-2xl bg-white border border-[#E2E8F0] shadow-sm p-8 text-center text-[#64748B] font-mono text-xs">
+              <div className="rounded-2xl bg-[#111] border border-white/5 p-8 text-center text-zinc-500 font-mono text-xs">
                 Select an issue from the queue to view full inspection details and perform verification.
               </div>
             )}
@@ -556,26 +553,26 @@ export default function AdminDashboard() {
       {/* Resolution Verification Modal (Issue 4e) */}
       <AnimatePresence>
         {resolvingIssue && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white border border-[#E2E8F0] rounded-2xl w-full max-w-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+              className="bg-[#141414] border border-emerald-500/40 rounded-2xl w-full max-w-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto"
             >
-              <div className="flex items-center justify-between pb-4 border-b border-[#E2E8F0]">
+              <div className="flex items-center justify-between pb-4 border-b border-white/10">
                 <div>
-                  <h3 className="font-display font-bold text-xl text-[#12304A] flex items-center gap-2">
-                    <Sparkle className="text-[#0F766E]" size={20} weight="fill" />
-                    AI Vision Resolution Audit
+                  <h3 className="font-display font-bold text-xl text-white flex items-center gap-2">
+                    <Sparkle className="text-emerald-400" size={20} weight="fill" />
+                    Claude Vision Resolution Audit
                   </h3>
-                  <p className="text-xs text-[#64748B] mt-0.5">
+                  <p className="text-xs text-zinc-400 mt-0.5">
                     Issue #{resolvingIssue.id.slice(0, 8)} · {resolvingIssue.road_name || "Road segment"}
                   </p>
                 </div>
                 <button
                   onClick={() => setResolvingIssue(null)}
-                  className="text-[#64748B] hover:text-[#12304A] p-1 rounded-lg hover:bg-slate-100 transition"
+                  className="text-zinc-400 hover:text-white p-1 rounded-lg"
                 >
                   <X size={20} />
                 </button>
@@ -584,19 +581,19 @@ export default function AdminDashboard() {
               {/* Side-by-side comparison banner */}
               <div className="grid grid-cols-2 gap-4 mt-4">
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-[#475569] font-medium">1. Original Citizen Photo</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400">1. Original Citizen Photo</label>
                   <img
                     src={resolvingIssue.photo_url || "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=400"}
                     alt="Original"
-                    className="mt-1 w-full h-36 object-cover rounded-xl border border-[#E2E8F0]"
+                    className="mt-1 w-full h-36 object-cover rounded-xl border border-white/10"
                   />
-                  <div className="mt-1 text-[11px] text-[#64748B] truncate">
+                  <div className="mt-1 text-[11px] text-zinc-400 truncate">
                     {resolvingIssue.category} ({resolvingIssue.severity})
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-[#475569] font-medium">2. Resolution Photo Proof</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400">2. Resolution Photo Proof</label>
                   {resolutionPreview ? (
                     <img
                       src={resolutionPreview}
@@ -604,9 +601,9 @@ export default function AdminDashboard() {
                       className="mt-1 w-full h-36 object-cover rounded-xl border border-emerald-500/50"
                     />
                   ) : (
-                    <label className="mt-1 w-full h-36 border-2 border-dashed border-[#CBD5E1] rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-[#F97316] transition bg-[#F8FAFC]">
-                      <Camera size={28} className="text-[#64748B] mb-1" />
-                      <span className="text-xs font-mono text-[#64748B]">Upload / Take Photo</span>
+                    <label className="mt-1 w-full h-36 border-2 border-dashed border-white/20 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-400/60 transition bg-black/40">
+                      <Camera size={28} className="text-zinc-400 mb-1" />
+                      <span className="text-xs font-mono text-zinc-400">Upload / Take Photo</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -617,7 +614,7 @@ export default function AdminDashboard() {
                     </label>
                   )}
                   {resolutionPreview && (
-                    <label className="mt-1 inline-block text-[11px] text-[#EA580C] hover:underline cursor-pointer font-mono font-medium">
+                    <label className="mt-1 inline-block text-[11px] text-amber-400 hover:underline cursor-pointer font-mono">
                       Change Photo
                       <input
                         type="file"
@@ -632,12 +629,12 @@ export default function AdminDashboard() {
               </div>
 
               {/* Geotag Distance Feedback */}
-              <div className="mt-4 p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs font-mono space-y-1">
+              <div className="mt-4 p-3 rounded-xl bg-black/40 border border-white/10 text-xs font-mono space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-[#64748B]">Geotag Source:</span>
-                  <span className="text-[#12304A] font-semibold">
+                  <span className="text-zinc-400">Geotag Source:</span>
+                  <span className="text-white">
                     {geotagLoading ? (
-                      <span className="text-[#EA580C] animate-pulse">Acquiring GPS fix...</span>
+                      <span className="text-amber-400 animate-pulse">Acquiring GPS fix...</span>
                     ) : resolutionGeotag && typeof resolutionGeotag.latitude === "number" ? (
                       `${(resolutionGeotag.source || "GPS").toUpperCase()} (${resolutionGeotag.latitude.toFixed(5)}, ${resolutionGeotag.longitude.toFixed(5)})`
                     ) : (
@@ -647,11 +644,11 @@ export default function AdminDashboard() {
                 </div>
 
                 {typeof distanceMeters === "number" && !isNaN(distanceMeters) && (
-                  <div className="flex items-center justify-between pt-1 border-t border-[#E2E8F0]">
-                    <span className="text-[#64748B]">Proximity to Issue:</span>
+                  <div className="flex items-center justify-between pt-1 border-t border-white/5">
+                    <span className="text-zinc-400">Proximity to Issue:</span>
                     <span
                       className={`font-bold ${
-                        distanceMeters <= 50 ? "text-emerald-700" : "text-red-600"
+                        distanceMeters <= 50 ? "text-emerald-400" : "text-red-400"
                       }`}
                     >
                       {distanceMeters.toFixed(1)} meters{" "}
@@ -662,24 +659,24 @@ export default function AdminDashboard() {
               </div>
 
               {geotagError && (
-                <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center gap-2 font-medium">
-                  <Warning size={16} className="text-amber-600" /> {geotagError}
+                <div className="mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300 flex items-center gap-2">
+                  <Warning size={16} /> {geotagError}
                 </div>
               )}
 
               {/* Error / Audit Rejection Banner */}
               {resolutionError && (
-                <div className="mt-3 p-4 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 space-y-2">
+                <div className="mt-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-300 space-y-2">
                   <div className="font-bold flex items-center gap-1.5">
-                    <Warning size={16} className="text-red-600" /> Audit Notice:
+                    <Warning size={16} /> Audit Notice:
                   </div>
                   <p>{resolutionError}</p>
-                  <label className="flex items-center gap-2 text-[#12304A] pt-2 cursor-pointer font-mono font-medium">
+                  <label className="flex items-center gap-2 text-white pt-2 cursor-pointer font-mono">
                     <input
                       type="checkbox"
                       checked={supervisorOverride}
                       onChange={(e) => setSupervisorOverride(e.target.checked)}
-                      className="accent-[#F97316]"
+                      className="accent-amber-500"
                     />
                     <span>Apply supervisor emergency override to bypass verification</span>
                   </label>
@@ -688,15 +685,15 @@ export default function AdminDashboard() {
 
               {/* Verification Result Card */}
               {verificationResult && (
-                <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800">
+                <div className="mt-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300">
                   <div className="font-bold flex items-center gap-1.5 text-sm">
-                    <CheckCircle size={18} weight="fill" className="text-emerald-600" />
-                    AI Vision Assessment
+                    <CheckCircle size={18} weight="fill" />
+                    Claude Vision Assessment
                   </div>
-                  <p className="mt-2 text-[#475569] leading-relaxed font-sans">
+                  <p className="mt-2 text-zinc-300 leading-relaxed font-sans">
                     {verificationResult.reasoning}
                   </p>
-                  <div className="mt-2 flex gap-4 text-[11px] font-mono text-emerald-700 font-medium">
+                  <div className="mt-2 flex gap-4 text-[11px] font-mono text-emerald-400">
                     <span>Same Location: {verificationResult.same_location ? "YES ✓" : "NO ✗"}</span>
                     <span>Issue Resolved: {verificationResult.issue_resolved ? "YES ✓" : "NO ✗"}</span>
                     <span>Confidence: {verificationResult.confidence}%</span>
@@ -705,23 +702,23 @@ export default function AdminDashboard() {
               )}
 
               {/* Action buttons */}
-              <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-[#E2E8F0]">
+              <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-white/10">
                 <button
                   type="button"
                   onClick={() => setResolvingIssue(null)}
-                  className="px-4 py-2.5 rounded-xl text-xs text-[#64748B] hover:text-[#12304A] font-medium transition"
+                  className="px-4 py-2.5 rounded-xl text-xs text-zinc-400 hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={submitResolution}
                   disabled={!resolutionPhoto || !resolutionGeotag || verifyingWithClaude}
-                  className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-semibold text-xs hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-2 transition shadow-sm"
+                  className="px-6 py-2.5 rounded-xl bg-emerald-500 text-black font-semibold text-xs hover:bg-emerald-400 disabled:opacity-50 flex items-center gap-2 transition shadow-lg"
                 >
                   {verifyingWithClaude ? (
                     <>
                       <CircleNotch className="animate-spin" size={16} />
-                      Auditing with AI Vision...
+                      Auditing with Claude Vision...
                     </>
                   ) : (
                     <>
@@ -743,20 +740,20 @@ function StatusBadge({ status }) {
   const s = (status || "").toLowerCase();
   if (s === "resolved") {
     return (
-      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
         RESOLVED
       </span>
     );
   }
   if (s === "in_progress" || s === "work_in_progress") {
     return (
-      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/30">
         IN PROGRESS
       </span>
     );
   }
   return (
-    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-blue-500/20 text-blue-300 border border-blue-500/30">
       REPORTED
     </span>
   );

@@ -1,231 +1,92 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { C, FONT_DISPLAY, FONT_MONO } from "@/theme";
 import Eyebrow from "./Eyebrow";
 import Reveal from "./Reveal";
-import WeatherAtmosphere from "./WeatherAtmosphere";
-import HeroAtmosphere from "./HeroAtmosphere";
+import RainLayer from "./RainLayer";
 import Pothole from "./Pothole";
 import Counter from "./Counter";
 import { api } from "@/lib/api";
-import {
-  Radioactive as Radar,
-  WarningOctagon,
-  ArrowRight,
-  ShieldCheck,
-  MapPin,
-  Buildings,
-  CheckCircle,
-} from "@phosphor-icons/react";
+import { Radioactive as Radar, WarningOctagon, ArrowRight } from "@phosphor-icons/react";
+
+const HERO_BG =
+  "https://images.unsplash.com/photo-1566276423184-a8c13d2a88a1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAxODF8MHwxfHNlYXJjaHwyfHxkYXJrJTIwYXNwaGFsdCUyMHJvYWQlMjBuaWdodHxlbnwwfHx8fDE3ODczOTc4ODJ8MA&ixlib=rb-4.1.0&q=85";
 
 export default function Hero() {
   const [stats, setStats] = useState({ total_problems: 2481, resolved_or_progress_pct: 73 });
 
   useEffect(() => {
-    api
-      .get("/stats/overview")
-      .then((r) => setStats(r.data))
-      .catch(() => {});
+    api.get("/stats/overview").then((r) => setStats(r.data)).catch(() => {});
   }, []);
 
   return (
-    <section
-      id="hero"
-      className="relative min-h-[95vh] overflow-hidden pt-36 pb-20 flex flex-col justify-between"
-      data-testid="hero-section"
-    >
-      {/* 1. Full-Bleed Photographic Background Image (Rain-washed road under golden sunlight) */}
-      <div className="absolute inset-0 pointer-events-none select-none z-0">
-        <picture>
-          <source srcSet="/assets/hero-bg.webp" type="image/webp" />
-          <img
-            src="/assets/hero-bg.jpg"
-            alt="Scenic rain-washed two-lane road with golden sunbeams through tree canopy"
-            className="w-full h-full object-cover object-center"
-            fetchPriority="high"
-          />
-        </picture>
-
-        {/* 2. Directional Gradient Overlay (Darker on the left and bottom for text legibility, transparent over the sun/road on the right) */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(90deg, rgba(8, 17, 32, 0.88) 0%, rgba(10, 22, 40, 0.74) 44%, rgba(10, 22, 40, 0.32) 70%, rgba(10, 22, 40, 0.12) 100%)",
-          }}
-        />
-        {/* Top vignette under navbar */}
-        <div
-          className="absolute top-0 left-0 right-0 h-36"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(6, 14, 26, 0.75) 0%, transparent 100%)",
-          }}
-        />
-        {/* Bottom vignette blending towards stat cards / next section */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-44"
-          style={{
-            background:
-              "linear-gradient(0deg, rgba(8, 17, 32, 0.75) 0%, transparent 100%)",
-          }}
-        />
+    <section id="hero" className="relative min-h-[90vh] overflow-hidden asphalt-bg pt-32 pb-20" data-testid="hero-section">
+      <div className="absolute inset-0 bg-cover bg-center opacity-40">
+        <img src={HERO_BG} alt="dark asphalt road" className="w-full h-full object-cover" />
       </div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-[#0A0A0A]" />
+      <RainLayer count={50} />
+      <div className="headlight" />
+      <div className="road-lane" />
 
-      {/* 3. Recreated In-Browser Atmosphere: God-Rays, Canvas Rain, Puddle Shimmer & Bokeh */}
-      <HeroAtmosphere />
-
-      {/* 4. Subtle Civic Map Grid & Road Lines */}
-      <div className="absolute inset-0 pointer-events-none select-none overflow-hidden opacity-20 z-1">
-        <svg
-          className="w-full h-full"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 1440 900"
-          fill="none"
-        >
-          {/* Subtle civic road corridors */}
-          <path
-            d="M-50 250 C 350 280, 600 120, 1500 180"
-            stroke="#94A3B8"
-            strokeWidth="2.5"
-            strokeDasharray="8 6"
-          />
-          <path
-            d="M-50 480 C 400 450, 800 620, 1500 520"
-            stroke="#64748B"
-            strokeWidth="3"
-          />
-          <path
-            d="M320 -50 C 380 400, 480 600, 520 950"
-            stroke="#64748B"
-            strokeWidth="1.5"
-          />
-          <path
-            d="M1020 -50 C 980 350, 1120 650, 1150 950"
-            stroke="#94A3B8"
-            strokeWidth="2"
-            strokeDasharray="6 4"
-          />
-          {/* Subtle civic coordinates / pin markers */}
-          <circle cx="360" cy="270" r="4" fill="#2DD4BF" opacity="0.8" />
-          <circle cx="750" cy="530" r="5" fill="#F97316" opacity="0.8" />
-          <circle cx="1060" cy="210" r="4" fill="#34D399" opacity="0.8" />
-        </svg>
-      </div>
-
-      {/* 5. Hero Content Container */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full my-auto">
+      <div className="relative z-10 max-w-7xl mx-auto px-6">
         <Reveal>
           <div className="max-w-4xl">
-            {/* Dark badge for contrast against the photo */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold mb-4 bg-slate-900/80 text-orange-400 border border-orange-400/30 backdrop-blur-md shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#F97316] animate-pulse" />
-              <span>/ LIVE · CIVIC INFRASTRUCTURE MONITOR</span>
-            </div>
-
-            <h1
-              className="font-display font-extrabold text-5xl sm:text-6xl md:text-7xl leading-[1.04] text-white tracking-tight drop-shadow-md"
-              data-testid="hero-headline"
-            >
+            <Eyebrow text="/ LIVE · CIVIC INFRASTRUCTURE MONITOR" />
+            <h1 className={`${FONT_DISPLAY} text-5xl md:text-7xl leading-[1.02] text-white`} data-testid="hero-headline">
               THE ROAD TELLS A STORY.
               <br />
-              <span className="text-[#F97316] drop-shadow-sm">WE MAKE IT VISIBLE.</span>
+              <span className="text-amber-400">WE MAKE IT VISIBLE.</span>
             </h1>
-            <p className="mt-6 text-lg sm:text-xl text-slate-200 max-w-2xl leading-relaxed font-normal drop-shadow-sm">
-              Identify roads. Report problems. Track repairs. Hold the road system accountable.
+            <p className="mt-6 text-lg md:text-xl text-zinc-300 max-w-xl leading-relaxed">
+              Identify roads. Report problems. Track repairs — end to end, in the open.
             </p>
 
-            <div className="mt-9 flex flex-wrap items-center gap-3">
+            <div className="mt-10 flex flex-wrap gap-3">
               <Link
                 to="/identify"
                 data-testid="hero-identify-btn"
-                className="px-5 py-3 rounded-xl bg-[#F97316] hover:bg-[#EA580C] text-white font-semibold transition-all duration-150 inline-flex items-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5 text-sm"
+                className="px-6 py-3 rounded-full bg-amber-500 text-black font-semibold hover:bg-amber-400 transition-colors inline-flex items-center gap-2 shadow-lg shadow-amber-500/20"
               >
-                <Radar size={18} weight="bold" />
-                <span>Identify This Road</span>
+                <Radar size={18} weight="bold" /> Identify My Road
               </Link>
               <Link
                 to="/report"
                 data-testid="hero-report-btn"
-                className="px-5 py-3 rounded-xl bg-white/95 hover:bg-white text-[#12304A] border border-white/60 hover:border-[#F97316] font-semibold transition-all duration-150 inline-flex items-center gap-2 shadow-md hover:-translate-y-0.5 backdrop-blur-xs text-sm"
+                className="px-6 py-3 rounded-full border border-white/20 hover:bg-white/10 text-white font-medium transition-colors inline-flex items-center gap-2"
               >
-                <WarningOctagon size={18} weight="bold" className="text-[#F97316]" />
-                <span>Report a Pothole / Issue</span>
-              </Link>
-              <Link
-                to="/tracking/RW-10234"
-                data-testid="hero-track-btn"
-                className="px-5 py-3 rounded-xl bg-slate-900/80 hover:bg-slate-900 text-slate-100 border border-slate-700 hover:border-amber-400 font-semibold transition-all duration-150 inline-flex items-center gap-2 shadow-md hover:-translate-y-0.5 backdrop-blur-xs text-sm"
-              >
-                <ShieldCheck size={18} weight="bold" className="text-amber-400" />
-                <span>Track Complaint</span>
-              </Link>
-              <Link
-                to="/road/NH-48"
-                data-testid="hero-authority-btn"
-                className="px-5 py-3 rounded-xl bg-slate-900/80 hover:bg-slate-900 text-slate-100 border border-slate-700 hover:border-teal-400 font-semibold transition-all duration-150 inline-flex items-center gap-2 shadow-md hover:-translate-y-0.5 backdrop-blur-xs text-sm"
-              >
-                <Buildings size={18} weight="bold" className="text-teal-400" />
-                <span>View Road Authority Info</span>
+                <WarningOctagon size={18} weight="bold" /> Report a Pothole
               </Link>
             </div>
           </div>
         </Reveal>
 
-        {/* 6. Stats & Interactive Pothole Card Grid */}
+        {/* Stats strip */}
         <Reveal delay={150} className="mt-16">
-          <div className="grid md:grid-cols-3 gap-6 items-center">
-            {/* Stat Card 1: Total Problems */}
-            <div
-              className="bg-white/95 backdrop-blur-md rounded-2xl p-6 border border-white/70 shadow-lg hover:shadow-xl transition-shadow"
-              data-testid="stat-total"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] tracking-wider text-[#64748B] font-mono uppercase font-semibold">
-                  ROAD PROBLEMS
-                </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-red-50 text-[#DC2626] font-semibold border border-red-100">
-                  NETWORK TELEMETRY
-                </span>
-              </div>
-              <div className="font-display font-extrabold text-4xl text-[#12304A] mt-2">
+          <div className="grid md:grid-cols-3 gap-6 items-end">
+            <div className="glass rounded-2xl p-5 border border-white/10" data-testid="stat-total">
+              <div className="text-[11px] tracking-widest text-zinc-500 font-mono">ROAD PROBLEMS</div>
+              <div className="font-display font-black text-4xl mt-1 text-white">
                 <Counter end={stats.total_problems} />
               </div>
-              <div className="text-xs text-[#64748B] mt-1.5 flex items-center gap-1">
-                <span>Road problems reported</span>
-              </div>
+              <div className="text-xs text-zinc-500 mt-1">Reported across the network</div>
             </div>
 
-            {/* Center: Interactive Animated Pothole near foreground */}
-            <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-900/50 backdrop-blur-md border border-white/10 shadow-lg">
-              <Pothole size={210} label="Pothole detected" severity="High" />
+            <div className="flex justify-center">
+              <Pothole size={200} />
             </div>
 
-            {/* Stat Card 3: Resolved / In Progress */}
-            <div
-              className="bg-white/95 backdrop-blur-md rounded-2xl p-6 border border-white/70 shadow-lg hover:shadow-xl transition-shadow"
-              data-testid="stat-progress"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] tracking-wider text-[#64748B] font-mono uppercase font-semibold">
-                  RESOLVED / IN PROGRESS
-                </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-50 text-[#16A34A] font-semibold border border-emerald-100">
-                  SLA COMPLIANCE
-                </span>
-              </div>
-              <div className="font-display font-extrabold text-4xl text-[#0F766E] mt-2">
+            <div className="glass rounded-2xl p-5 border border-white/10" data-testid="stat-progress">
+              <div className="text-[11px] tracking-widest text-zinc-500 font-mono">RESOLVED / IN PROGRESS</div>
+              <div className="font-display font-black text-4xl mt-1 text-amber-400">
                 <Counter end={stats.resolved_or_progress_pct} suffix="%" />
               </div>
-              <div className="text-xs text-[#64748B] mt-1.5 flex items-center gap-1">
-                <CheckCircle size={14} className="text-[#16A34A]" weight="fill" />
-                <span>Active contractor accountability</span>
-              </div>
+              <div className="text-xs text-zinc-500 mt-1">Active civic response</div>
             </div>
           </div>
         </Reveal>
 
-        {/* Section bottom dashed divider */}
-        <div className="rw-lane mt-16 opacity-30" />
+        <div className="rw-lane mt-20" />
       </div>
     </section>
   );

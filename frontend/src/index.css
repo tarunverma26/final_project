@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
 @import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
 
 @tailwind base;
@@ -7,18 +7,17 @@
 
 body {
     margin: 0;
-    background: #F8FAFC;
-    color: #0F172A;
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0E0E10;
+    color: #F2EFE9;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
 }
 
 h1, h2, h3, h4, .font-display {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    letter-spacing: -0.025em;
-    color: #12304A;
+    font-family: 'Outfit', system-ui, sans-serif;
+    letter-spacing: -0.02em;
 }
 .font-mono, code {
     font-family: 'JetBrains Mono', monospace;
@@ -26,32 +25,33 @@ h1, h2, h3, h4, .font-display {
 
 @layer base {
     :root {
-        --background: 210 40% 98%;
-        --foreground: 222 47% 11%;
-        --card: 0 0% 100%;
-        --card-foreground: 222 47% 11%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 222 47% 11%;
-        --primary: 24 95% 53%;
-        --primary-foreground: 0 0% 100%;
-        --secondary: 210 40% 96.1%;
-        --secondary-foreground: 222 47% 11%;
-        --muted: 210 40% 96.1%;
-        --muted-foreground: 215 16% 47%;
-        --accent: 210 40% 96.1%;
-        --accent-foreground: 222 47% 11%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 210 40% 98%;
-        --border: 214 32% 91%;
-        --input: 214 32% 91%;
-        --ring: 24 95% 53%;
+        --background: 240 10% 6%;
+        --foreground: 40 20% 95%;
+        --card: 240 6% 9%;
+        --card-foreground: 40 20% 95%;
+        --popover: 240 6% 9%;
+        --popover-foreground: 40 20% 95%;
+        --primary: 36 82% 49%;
+        --primary-foreground: 240 10% 6%;
+        --secondary: 240 5% 12%;
+        --secondary-foreground: 40 20% 95%;
+        --muted: 240 5% 12%;
+        --muted-foreground: 38 7% 61%;
+        --accent: 240 5% 15%;
+        --accent-foreground: 40 20% 95%;
+        --destructive: 358 75% 59%;
+        --destructive-foreground: 40 20% 95%;
+        --border: 240 5% 15%;
+        --input: 240 5% 15%;
+        --ring: 36 82% 49%;
         --radius: 0.75rem;
     }
 }
 
-/* ---------- Premium Light Civic Background ---------- */
+/* ---------- Road Background ---------- */
 .asphalt-bg {
-    background-color: #F8FAFC;
+    background:
+        linear-gradient(180deg, #0E0E10 0%, #131316 100%);
     position: relative;
 }
 .asphalt-bg::before {
@@ -59,9 +59,10 @@ h1, h2, h3, h4, .font-display {
     position: absolute;
     inset: 0;
     background-image:
-        radial-gradient(circle at 25% 40%, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
-        radial-gradient(circle at 75% 60%, rgba(15, 23, 42, 0.025) 1px, transparent 1px);
-    background-size: 32px 32px, 48px 48px;
+        radial-gradient(circle at 25% 40%, rgba(255,255,255,0.03) 0px, transparent 2px),
+        radial-gradient(circle at 75% 60%, rgba(255,255,255,0.02) 0px, transparent 2px),
+        radial-gradient(circle at 40% 80%, rgba(255,255,255,0.02) 0px, transparent 2px);
+    background-size: 60px 60px, 90px 90px, 120px 120px;
     pointer-events: none;
     opacity: 0.8;
 }
@@ -72,58 +73,73 @@ h1, h2, h3, h4, .font-display {
     left: 50%;
     top: 0;
     bottom: 0;
-    width: 4px;
+    width: 6px;
     transform: translateX(-50%);
-    background-image: linear-gradient(180deg, #F97316 0%, #F97316 50%, transparent 50%);
-    background-size: 100% 48px;
-    opacity: 0.15;
-    animation: lane-move 1.4s linear infinite;
+    background-image: linear-gradient(180deg, #F5D67C 0%, #F5D67C 50%, transparent 50%);
+    background-size: 100% 60px;
+    opacity: 0.35;
+    animation: lane-move 1.2s linear infinite;
     pointer-events: none;
 }
 @keyframes lane-move {
     from { background-position-y: 0; }
-    to { background-position-y: 48px; }
+    to { background-position-y: 60px; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .road-lane {
-        animation: none;
-    }
-}
-
-/* ---------- Highway Dashed Divider ---------- */
+/* ---------- Highway Dashed Amber Divider ---------- */
 .rw-lane {
     width: 100%;
     height: 1px;
     background: repeating-linear-gradient(
         90deg,
-        rgba(249, 115, 22, 0.4) 0,
-        rgba(249, 115, 22, 0.4) 16px,
+        rgba(229, 149, 24, 0.35) 0,
+        rgba(229, 149, 24, 0.35) 16px,
         transparent 16px,
         transparent 32px
     );
-    opacity: 0.6;
+    opacity: 0.85;
 }
 
-/* ---------- Pothole Visual in Daylight ---------- */
+/* ---------- Rain ---------- */
+.rain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 2;
+}
+.raindrop {
+    position: absolute;
+    top: -10%;
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.35));
+    animation: rain-fall linear infinite;
+}
+@keyframes rain-fall {
+    to { transform: translateY(120vh); }
+}
+
+/* ---------- Pothole ---------- */
 .pothole {
     position: relative;
     border-radius: 55% 45% 60% 40% / 55% 60% 40% 45%;
     background:
-        radial-gradient(ellipse at 40% 35%, rgba(100, 116, 139, 0.3) 0%, rgba(30, 41, 59, 0.75) 45%, #0F172A 75%);
+        radial-gradient(ellipse at 40% 35%, rgba(180,200,220,0.35) 0%, rgba(30,40,55,0.6) 30%, #050505 65%),
+        #000;
     box-shadow:
-        inset 0 6px 14px rgba(15, 23, 42, 0.6),
-        inset 0 -3px 8px rgba(148, 163, 184, 0.2),
-        0 8px 24px rgba(15, 23, 42, 0.1);
-    transition: transform 0.3s ease;
+        inset 0 8px 20px rgba(0,0,0,0.9),
+        inset 0 -4px 12px rgba(80,90,110,0.15),
+        0 0 40px rgba(0,0,0,0.7);
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
     cursor: pointer;
 }
-.pothole:hover { transform: scale(1.04); }
+.pothole:hover { transform: scale(1.06); }
 .pothole::after {
     content: '';
-    position: absolute; inset: 12%;
+    position: absolute; inset: 15%;
     border-radius: inherit;
-    background: radial-gradient(circle at 40% 30%, rgba(255, 255, 255, 0.25), transparent 50%);
+    background: radial-gradient(circle at 40% 30%, rgba(255,255,255,0.15), transparent 55%);
     pointer-events: none;
 }
 
@@ -132,48 +148,36 @@ h1, h2, h3, h4, .font-display {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    border: 1px solid rgba(15, 118, 110, 0.4);
-    animation: ripple-out 1.8s ease-out infinite;
+    border: 1px solid rgba(150,190,220,0.5);
+    animation: ripple-out 1.6s ease-out infinite;
     pointer-events: none;
 }
-.ripple:nth-child(2) { animation-delay: 0.6s; }
-.ripple:nth-child(3) { animation-delay: 1.2s; }
+.ripple:nth-child(2) { animation-delay: 0.5s; }
+.ripple:nth-child(3) { animation-delay: 1s; }
 @keyframes ripple-out {
-    0% { transform: scale(0.6); opacity: 0.8; }
-    100% { transform: scale(1.5); opacity: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .ripple {
-        animation: none;
-    }
+    0% { transform: scale(0.6); opacity: 0.9; }
+    100% { transform: scale(1.6); opacity: 0; }
 }
 
 /* GPS pulse */
 .gps-pulse {
     position: relative;
-    width: 18px; height: 18px;
+    width: 20px; height: 20px;
     border-radius: 999px;
-    background: #F97316;
-    box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
+    background: #F59E0B;
+    box-shadow: 0 0 20px rgba(245,158,11,0.7);
 }
 .gps-pulse::before, .gps-pulse::after {
     content: '';
     position: absolute; inset: 0;
     border-radius: 999px;
-    border: 2px solid #F97316;
+    border: 2px solid #F59E0B;
     animation: gps-ring 2s ease-out infinite;
 }
 .gps-pulse::after { animation-delay: 1s; }
 @keyframes gps-ring {
     0% { transform: scale(1); opacity: 0.8; }
-    100% { transform: scale(3); opacity: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .gps-pulse::before, .gps-pulse::after {
-        animation: none;
-    }
+    100% { transform: scale(3.5); opacity: 0; }
 }
 
 /* AI scan line */
@@ -181,126 +185,90 @@ h1, h2, h3, h4, .font-display {
     position: absolute;
     left: 0; right: 0;
     height: 2px;
-    background: linear-gradient(90deg, transparent, #0F766E, transparent);
-    box-shadow: 0 0 8px rgba(15, 118, 110, 0.5);
-    animation: scan 2.6s ease-in-out infinite;
+    background: linear-gradient(90deg, transparent, #F59E0B, transparent);
+    box-shadow: 0 0 12px rgba(245,158,11,0.8);
+    animation: scan 2.4s ease-in-out infinite;
 }
 @keyframes scan {
     0%, 100% { top: 0%; }
     50% { top: 100%; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .scan-line {
-        animation: none;
-        top: 50%;
-    }
+/* Headlight sweep */
+.headlight {
+    position: absolute;
+    left: -20%; top: 60%;
+    width: 40%; height: 30%;
+    background: radial-gradient(ellipse at center, rgba(255,240,200,0.15), transparent 60%);
+    filter: blur(30px);
+    animation: headlight-sweep 8s linear infinite;
+    pointer-events: none;
+}
+@keyframes headlight-sweep {
+    0% { transform: translateX(0) translateY(0); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translateX(300%) translateY(-20%); opacity: 0; }
 }
 
-/* Utility glass for light mode */
+/* Utility glass */
 .glass {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid #E2E8F0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+    background: rgba(10,10,10,0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
 }
 
-/* Leaflet light tweaks */
-.leaflet-container {
-    background: #F8FAFC;
-    font-family: 'Inter', system-ui, sans-serif;
-}
+/* Leaflet dark tweaks */
+.leaflet-container { background: #0A0A0A; }
 .roadwatch-marker {
     width: 18px; height: 18px;
-    background: #F97316;
-    border: 2px solid #FFFFFF;
-    border-radius: 999px;
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.5);
-}
-.roadwatch-marker.critical {
-    background: #DC2626;
-    border-color: #FFFFFF;
-    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.5);
-}
-.roadwatch-marker.resolved {
-    background: #16A34A;
-    border-color: #FFFFFF;
-    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.5);
-}
-.roadwatch-marker.in-progress {
     background: #F59E0B;
-    border-color: #FFFFFF;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.5);
+    border: 2px solid #FDE68A;
+    border-radius: 999px;
+    box-shadow: 0 0 20px rgba(245,158,11,0.9);
+    animation: gps-ring 2s ease-out infinite;
 }
+.roadwatch-marker.critical { background: #EF4444; box-shadow: 0 0 20px rgba(239,68,68,0.9); }
+
+/* ---------- Healing / Resolved marker ---------- */
+.roadwatch-marker.resolved {
+    background: #10B981;
+    border-color: #6EE7B7;
+    box-shadow: 0 0 20px rgba(16,185,129,0.9);
+    animation: none;
+    position: relative;
+}
+.roadwatch-marker.resolved::before,
+.roadwatch-marker.resolved::after {
+    content: '';
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 100%; height: 100%;
+    transform: translate(-50%, -50%) scale(1);
+    border-radius: 999px;
+    border: 2px solid rgba(16,185,129,0.8);
+    animation: heal-ripple 3.2s ease-out infinite;
+    pointer-events: none;
+}
+.roadwatch-marker.resolved::after { animation-delay: 1.6s; }
+@keyframes heal-ripple {
+    0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.9; border-color: rgba(16,185,129,0.9); }
+    60%  { opacity: 0.35; border-color: rgba(110,231,183,0.7); }
+    100% { transform: translate(-50%, -50%) scale(5.5); opacity: 0;   border-color: rgba(110,231,183,0.3); }
+}
+.roadwatch-marker.in-progress { background: #F59E0B; }
+.roadwatch-marker.in-progress::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 999px;
+    border: 2px dashed rgba(245,158,11,0.9);
+    animation: spin-slow 4s linear infinite;
+}
+@keyframes spin-slow { to { transform: rotate(360deg); } }
 
 /* Number counter */
 .counter { font-variant-numeric: tabular-nums; }
 
 /* Selection */
-::selection { background: #FFEDD5; color: #12304A; }
-
-/* ==========================================================================
-   ROADWATCH CINEMATIC ROAD JOURNEY DESIGN SYSTEM
-   Dark asphalt / charcoal base with floating glassmorphism cards
-   High-visibility safety accents: safety yellow, neon orange, reflective green
-   ========================================================================== */
-.road-journey-theme {
-    background-color: transparent !important;
-    color: #F8FAFC !important;
-    position: relative;
-}
-
-.road-journey-theme section:not(#hero) {
-    background-color: rgba(7, 13, 23, 0.76) !important;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.4) !important;
-    color: #F1F5F9;
-}
-
-.road-journey-theme .bg-white {
-    background-color: rgba(13, 23, 39, 0.88) !important;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-color: rgba(255, 255, 255, 0.12) !important;
-    color: #F8FAFC !important;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
-}
-
-.road-journey-theme .bg-\[\#F8FAFC\],
-.road-journey-theme .bg-slate-50,
-.road-journey-theme .bg-\[\#F1F5F9\] {
-    background-color: rgba(9, 16, 28, 0.75) !important;
-    border-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-.road-journey-theme h1,
-.road-journey-theme h2,
-.road-journey-theme h3,
-.road-journey-theme h4,
-.road-journey-theme .font-display,
-.road-journey-theme .text-\[\#12304A\] {
-    color: #FFFFFF !important;
-}
-
-.road-journey-theme p,
-.road-journey-theme .text-\[\#64748B\],
-.road-journey-theme .text-\[\#475569\],
-.road-journey-theme .text-slate-600 {
-    color: #CBD5E1 !important;
-}
-
-.road-journey-theme .border-\[\#E2E8F0\],
-.road-journey-theme .border-\[\#CBD5E1\],
-.road-journey-theme .border-\[\#F1F5F9\] {
-    border-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-.road-journey-theme footer {
-    background-color: rgba(5, 9, 16, 0.94) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-    color: #94A3B8 !important;
-}
-
+::selection { background: #F59E0B; color: #0A0A0A; }

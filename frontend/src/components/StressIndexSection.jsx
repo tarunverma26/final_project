@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { C, FONT_DISPLAY, FONT_MONO } from "@/theme";
 import Eyebrow from "./Eyebrow";
 import Reveal from "./Reveal";
 import {
@@ -11,8 +12,6 @@ import {
   Buildings,
   CheckCircle,
   Waves,
-  Sparkle,
-  ArrowRight,
 } from "@phosphor-icons/react";
 
 const INITIAL_ZONES = [
@@ -24,9 +23,9 @@ const INITIAL_ZONES = [
     potholes: 42,
     drainage: 31,
     lighting: 18,
-    riskLevel: "Critical Risk",
+    riskLevel: "High Risk",
     diagnosis: "Severe monsoon waterlogging with deep sub-base cavities along historic transit corridors.",
-    compoundInsight: "Bad road + failed drainage = active flood-prone disaster stretch.",
+    compoundInsight: "Bad road + failed drainage = active flood-prone stretch.",
     priorityRank: "#01",
   },
   {
@@ -39,7 +38,7 @@ const INITIAL_ZONES = [
     lighting: 15,
     riskLevel: "High Risk",
     diagnosis: "Heavy freight axle-loads accelerating saturated bituminous layer collapse.",
-    compoundInsight: "Industrial freight + cracked culverts = structural pavement breakdown.",
+    compoundInsight: "Industrial freight + cracked culverts = pavement breakdown.",
     priorityRank: "#02",
   },
   {
@@ -63,7 +62,7 @@ const INITIAL_ZONES = [
     potholes: 15,
     drainage: 11,
     lighting: 9,
-    riskLevel: "Moderate Risk",
+    riskLevel: "Medium Risk",
     diagnosis: "Commuter lane erosion with recurring nighttime visibility blind spots.",
     compoundInsight: "Streetlight outage + road potholes = dangerous night hazard.",
     priorityRank: "#04",
@@ -81,245 +80,251 @@ const INITIAL_ZONES = [
     compoundInsight: "Minor surface defects under regular municipal inspection.",
     priorityRank: "#05",
   },
+  {
+    id: "zone-6",
+    ward: "Ward 02",
+    name: "Cyber Hub & DLF Horizon Walkway",
+    score: 16,
+    potholes: 2,
+    drainage: 1,
+    lighting: 2,
+    riskLevel: "Low Risk",
+    diagnosis: "Optimal condition, engineered subsurface stormwater runoff channels.",
+    compoundInsight: "Fully operational infrastructure, zero compounding alerts.",
+    priorityRank: "#06",
+  },
 ];
 
 export default function StressIndexSection() {
-  const [selectedZoneId, setSelectedZoneId] = useState("zone-1");
-  const current = INITIAL_ZONES.find((z) => z.id === selectedZoneId) || INITIAL_ZONES[0];
+  const [filter, setFilter] = useState("all");
 
-  const getScoreBadge = (score) => {
-    if (score >= 80) return "bg-red-50 text-[#DC2626] border-red-200";
-    if (score >= 60) return "bg-amber-50 text-[#D97706] border-amber-200";
-    return "bg-emerald-50 text-[#16A34A] border-emerald-200";
-  };
+  // Sorted high to low risk as strictly requested
+  const sortedZones = [...INITIAL_ZONES].sort((a, b) => b.score - a.score);
 
-  const getScoreColor = (score) => {
-    if (score >= 80) return "#DC2626";
-    if (score >= 60) return "#F59E0B";
-    return "#16A34A";
+  const filteredZones = sortedZones.filter((z) => {
+    if (filter === "high") return z.score >= 70;
+    if (filter === "medium") return z.score >= 40 && z.score < 70;
+    if (filter === "low") return z.score < 40;
+    return true;
+  });
+
+  const getRiskStyle = (score) => {
+    if (score >= 70) {
+      return {
+        badgeColor: C.red,
+        border: "border-[#E5484D]/35",
+        pillBg: "bg-[#E5484D]/10 text-[#F87171] border border-[#E5484D]/25",
+        barColor: "bg-[#E5484D]",
+        circleBg: "rgba(229, 72, 77, 0.08)",
+        label: "CRITICAL RISK",
+      };
+    }
+    if (score >= 40) {
+      return {
+        badgeColor: C.amber,
+        border: "border-[#E59518]/30",
+        pillBg: "bg-[#E59518]/10 text-[#E59518] border border-[#E59518]/25",
+        barColor: "bg-[#E59518]",
+        circleBg: "rgba(229, 149, 24, 0.08)",
+        label: "ELEVATED RISK",
+      };
+    }
+    return {
+      badgeColor: C.green,
+      border: "border-[#3EA370]/25",
+      pillBg: "bg-[#3EA370]/10 text-[#5BAE85] border border-[#3EA370]/25",
+      barColor: "bg-[#3EA370]",
+      circleBg: "rgba(62, 163, 112, 0.08)",
+      label: "LOW RISK",
+    };
   };
 
   return (
-    <section id="stress-index" className="relative py-24 bg-[#F8FAFC] overflow-hidden" data-testid="stress-index-section">
+    <section id="stress-index" className="relative py-24 asphalt-bg overflow-hidden" data-testid="stress-index-section">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         
         {/* Section Header */}
         <Reveal>
           <div className="max-w-3xl">
-            <Eyebrow text="/ COMPOUND INFRASTRUCTURE METRICS" />
-            <h2 className="font-display font-extrabold text-4xl md:text-5xl text-[#12304A] mt-1 leading-[1.08]">
-              Compound Resource <span className="text-[#0F766E]">Stress Index.</span>
+            <Eyebrow text="/ COMPOUND RESOURCE STRESS INDEX" />
+            <h2 className={`${FONT_DISPLAY} text-4xl md:text-5xl text-[#F2EFE9] mt-1 leading-[1.08]`}>
+              Compound Resource <span className="text-[#E59518]">Stress Index.</span>
             </h2>
-            <p className="mt-3 text-base md:text-lg text-[#64748B] leading-relaxed">
-              Potholes do not occur in isolation. Our algorithmic model layers road surface degradation with clogged drainage
-              runs and broken streetlights to calculate compound vulnerability scores across municipal wards.
+            <p className="mt-3 text-base md:text-lg text-[#A39E93] leading-relaxed">
+              Potholes, drainage failures, and streetlight outages are tracked separately with no single view of how bad
+              an area is. RoadWatch synthesizes cross-department data into a single 0–100 vulnerability score.
             </p>
           </div>
         </Reveal>
 
-        {/* 2-Column Interface: Zone Selector + Detailed Diagnostic */}
-        <Reveal delay={150} className="mt-12">
-          <div className="grid lg:grid-cols-12 gap-8 items-start">
-            
-            {/* Left Column: Zone List (5 cols on lg) */}
-            <div className="lg:col-span-5 space-y-3">
-              <div className="flex items-center justify-between text-xs font-mono text-[#64748B] px-1 mb-1 font-semibold uppercase tracking-wider">
-                <span>VULNERABILITY RANKING</span>
-                <span>COMPOUND SCORE</span>
+        {/* Short explanation quote as required by prompt */}
+        <Reveal delay={100} className="mt-8">
+          <div className="rounded-2xl p-4 md:p-5 border border-white/[0.08] bg-[#141416]/95 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-[#E59518]/10 border border-[#E59518]/25 flex items-center justify-center text-[#E59518] shrink-0">
+                <Waves size={20} weight="bold" />
               </div>
-
-              {INITIAL_ZONES.map((zone) => {
-                const isSelected = zone.id === selectedZoneId;
-                return (
-                  <div
-                    key={zone.id}
-                    onClick={() => setSelectedZoneId(zone.id)}
-                    data-testid={`stress-zone-${zone.id}`}
-                    className={`rounded-2xl p-4 cursor-pointer transition-all duration-200 border flex items-center justify-between gap-4 ${
-                      isSelected
-                        ? "bg-white border-2 border-[#0F766E] shadow-md ring-4 ring-teal-50"
-                        : "bg-white border-[#E2E8F0] hover:border-slate-300 shadow-2xs"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-xs font-bold text-[#64748B]">
-                        {zone.priorityRank}
-                      </span>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-[#12304A]">
-                            {zone.ward}
-                          </span>
-                          <span
-                            className={`text-[10px] font-mono px-2 py-0.5 rounded border font-semibold ${getScoreBadge(
-                              zone.score
-                            )}`}
-                          >
-                            {zone.riskLevel}
-                          </span>
-                        </div>
-                        <div className="text-xs text-[#64748B] line-clamp-1 mt-0.5">
-                          {zone.name}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <div
-                        className="font-display font-black text-2xl"
-                        style={{ color: getScoreColor(zone.score) }}
-                      >
-                        {zone.score}
-                      </div>
-                      <div className="text-[10px] font-mono text-[#64748B]">INDEX</div>
-                    </div>
-                  </div>
-                );
-              })}
+              <p className="text-xs md:text-sm text-[#F2EFE9]/90 italic">
+                "Combines multiple infrastructure signals to flag compounding risk (e.g. bad road + failed drainage = flood-prone stretch) that single-issue tracking misses."
+              </p>
             </div>
 
-            {/* Right Column: Active Zone Deep Dive (7 cols on lg) */}
-            <div className="lg:col-span-7">
-              <div className="rounded-2xl border border-[#E2E8F0] bg-white p-6 md:p-8 shadow-sm">
-                
-                {/* Header */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pb-6 border-b border-[#F1F5F9]">
-                  <div>
-                    <span className="text-xs font-mono text-[#0F766E] font-bold uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkle size={14} weight="fill" />
-                      ALGORITHMIC DIAGNOSIS · {current.ward}
-                    </span>
-                    <h3 className="font-display text-2xl md:text-3xl text-[#12304A] font-extrabold mt-1">
-                      {current.name}
-                    </h3>
-                  </div>
-                  <div className="text-right">
-                    <span
-                      className={`text-xs font-mono font-bold px-3 py-1 rounded-full border ${getScoreBadge(
-                        current.score
-                      )}`}
-                    >
-                      Priority Rank {current.priorityRank}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Score Big Indicator */}
-                <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-teal-50/50 border border-teal-100">
-                  <div className="flex items-center gap-4">
-                    <div
-                      className="w-16 h-16 rounded-2xl flex items-center justify-center font-display font-black text-3xl shadow-xs"
-                      style={{
-                        backgroundColor: "#FFFFFF",
-                        color: getScoreColor(current.score),
-                        border: `2px solid ${getScoreColor(current.score)}`,
-                      }}
-                    >
-                      {current.score}
-                    </div>
-                    <div>
-                      <div className="font-bold text-sm text-[#12304A]">
-                        Compound Stress Index (/100)
-                      </div>
-                      <div className="text-xs text-[#64748B] mt-0.5">
-                        Weighted combination of structural, hydraulic & transit risk
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-xs font-mono font-semibold text-[#0F766E] bg-white border border-teal-200 px-3 py-1.5 rounded-xl w-fit">
-                    AI Automated Allocation
-                  </div>
-                </div>
-
-                {/* Factor Contribution Breakdown */}
-                <div className="mt-6 space-y-4">
-                  <div className="text-xs font-mono text-[#64748B] uppercase tracking-wider font-semibold">
-                    COMPONENT CONTRIBUTIONS
-                  </div>
-
-                  {/* Potholes */}
-                  <div>
-                    <div className="flex items-center justify-between text-xs mb-1.5 font-medium">
-                      <span className="text-[#0F172A] flex items-center gap-1.5">
-                        <WarningCircle size={14} className="text-[#DC2626]" weight="fill" />
-                        Pothole & Surface Ruptures
-                      </span>
-                      <span className="font-mono font-bold text-[#DC2626]">
-                        {current.potholes} defects
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-                      <div
-                        className="h-full bg-[#DC2626] rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(100, current.potholes * 2)}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Drainage */}
-                  <div>
-                    <div className="flex items-center justify-between text-xs mb-1.5 font-medium">
-                      <span className="text-[#0F172A] flex items-center gap-1.5">
-                        <Drop size={14} className="text-[#2563EB]" weight="fill" />
-                        Clogged Stormwater Culverts
-                      </span>
-                      <span className="font-mono font-bold text-[#2563EB]">
-                        {current.drainage} choke points
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-                      <div
-                        className="h-full bg-[#2563EB] rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(100, current.drainage * 2.5)}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Streetlighting */}
-                  <div>
-                    <div className="flex items-center justify-between text-xs mb-1.5 font-medium">
-                      <span className="text-[#0F172A] flex items-center gap-1.5">
-                        <Lightbulb size={14} className="text-[#F59E0B]" weight="fill" />
-                        Streetlight Inactive Spans
-                      </span>
-                      <span className="font-mono font-bold text-[#D97706]">
-                        {current.lighting} dark spans
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-                      <div
-                        className="h-full bg-[#F59E0B] rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(100, current.lighting * 4)}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Compound Insight Callout */}
-                <div className="mt-6 p-4 rounded-xl bg-orange-50 border border-orange-200/80 text-xs text-[#9A3412]">
-                  <div className="font-semibold text-[#C2410C] flex items-center gap-1.5 mb-1 text-xs">
-                    <ShieldWarning size={16} weight="fill" />
-                    Compound Hazard Synergy Detected
-                  </div>
-                  {current.compoundInsight}
-                </div>
-
-                {/* Municipal Dispatch SLA Recommendation */}
-                <div className="mt-5 pt-4 border-t border-[#F1F5F9] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <div className="text-[#64748B]">
-                    Suggested Intervention:{" "}
-                    <strong className="text-[#12304A]">Joint PWD Bitumen + MCD Drainage Clearing Crew</strong>
-                  </div>
-                  <span className="font-mono text-[#0F766E] font-semibold bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">
-                    SLA: 48h Mandatory
-                  </span>
-                </div>
-              </div>
+            {/* Filter pills */}
+            <div className="flex items-center gap-1.5 self-end md:self-auto font-mono text-xs">
+              <span className="text-[#78736A] text-[11px] mr-1 hidden sm:inline">FILTER:</span>
+              {[
+                { id: "all", label: "All Wards" },
+                { id: "high", label: "High Risk (>70)" },
+                { id: "medium", label: "Medium (40-69)" },
+                { id: "low", label: "Low (<40)" },
+              ].map((btn) => (
+                <button
+                  key={btn.id}
+                  onClick={() => setFilter(btn.id)}
+                  className={`px-2.5 py-1 rounded-md text-[11px] transition-colors cursor-pointer ${
+                    filter === btn.id
+                      ? "bg-[#E59518] text-[#0E0E10] font-semibold"
+                      : "bg-white/[0.05] text-[#A39E93] hover:bg-white/[0.08] hover:text-[#F2EFE9]"
+                  }`}
+                >
+                  {btn.label}
+                </button>
+              ))}
             </div>
           </div>
         </Reveal>
 
-        {/* Section bottom dashed lane divider */}
+        {/* Grid of 4-6 City Zones/Wards (Responsive: 1 col on mobile, 2 col md, 3 col lg) */}
+        <Reveal delay={200} className="mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredZones.map((zone) => {
+              const risk = getRiskStyle(zone.score);
+              const totalIssues = zone.potholes + zone.drainage + zone.lighting;
+
+              // Proportions for visual breakdown bar
+              const potholePct = Math.round((zone.potholes / totalIssues) * 100);
+              const drainagePct = Math.round((zone.drainage / totalIssues) * 100);
+              const lightingPct = 100 - potholePct - drainagePct;
+
+              return (
+                <div
+                  key={zone.id}
+                  data-testid={`stress-card-${zone.ward.toLowerCase().replace(/\s+/g, "-")}`}
+                  className={`rounded-2xl border bg-[#141416]/95 p-6 flex flex-col justify-between transition-all duration-300 hover:border-white/[0.14] hover:-translate-y-0.5 ${risk.border}`}
+                >
+                  {/* Top Bar: Ward Name & Priority Rank */}
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-white/[0.06] text-[#F2EFE9] border border-white/[0.08]">
+                          {zone.ward}
+                        </span>
+                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-semibold ${risk.pillBg}`}>
+                          {risk.label}
+                        </span>
+                      </div>
+                      <span className="text-xs text-[#78736A] font-mono">
+                        PRIORITY {zone.priorityRank}
+                      </span>
+                    </div>
+
+                    <h3 className={`${FONT_DISPLAY} text-lg md:text-xl text-[#F2EFE9] font-bold leading-snug`}>
+                      {zone.name}
+                    </h3>
+
+                    {/* Composite Score Meter */}
+                    <div className="mt-4 p-4 rounded-xl bg-[#0E0E10]/80 border border-white/[0.05] flex items-center justify-between">
+                      <div>
+                        <div className="text-[11px] font-mono text-[#78736A]">COMPOUND STRESS SCORE</div>
+                        <div className="flex items-baseline gap-1 mt-0.5">
+                          <span
+                            className="font-display font-black text-3xl md:text-4xl"
+                            style={{ color: risk.badgeColor }}
+                          >
+                            {zone.score}
+                          </span>
+                          <span className="text-xs text-[#78736A]">/100</span>
+                        </div>
+                      </div>
+
+                      {/* Visual Circular Gauge */}
+                      <div className="w-12 h-12 rounded-full border flex items-center justify-center font-mono text-xs font-bold"
+                        style={{
+                          borderColor: risk.badgeColor,
+                          backgroundColor: risk.circleBg,
+                          color: risk.badgeColor,
+                        }}
+                      >
+                        {zone.score}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3 Contributing Issue Types Breakdown */}
+                  <div className="mt-5">
+                    <div className="flex items-center justify-between text-[11px] font-mono text-[#A39E93] mb-1.5">
+                      <span>CONTRIBUTING SIGNALS</span>
+                      <span className="text-[#78736A]">{totalIssues} total active</span>
+                    </div>
+
+                    {/* Proportional Compound Bar */}
+                    <div className="h-2 rounded-full overflow-hidden flex bg-white/[0.08] mb-3">
+                      <div
+                        style={{ width: `${potholePct}%` }}
+                        className="bg-[#E59518]"
+                        title={`Potholes: ${zone.potholes}`}
+                      />
+                      <div
+                        style={{ width: `${drainagePct}%` }}
+                        className="bg-[#5B8EC2]"
+                        title={`Drainage: ${zone.drainage}`}
+                      />
+                      <div
+                        style={{ width: `${lightingPct}%` }}
+                        className="bg-[#78736A]"
+                        title={`Lighting: ${zone.lighting}`}
+                      />
+                    </div>
+
+                    {/* 3 Mini breakdown pills */}
+                    <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                      <div className="p-2 rounded-lg bg-[#0E0E10]/80 border border-white/[0.05]">
+                        <div className="flex items-center justify-center gap-1 text-[11px] text-[#E59518] font-mono">
+                          <WarningCircle size={12} /> Road
+                        </div>
+                        <div className="font-bold text-[#F2EFE9] mt-0.5">{zone.potholes}</div>
+                      </div>
+
+                      <div className="p-2 rounded-lg bg-[#0E0E10]/80 border border-white/[0.05]">
+                        <div className="flex items-center justify-center gap-1 text-[11px] text-[#5B8EC2] font-mono">
+                          <Drop size={12} /> Drain
+                        </div>
+                        <div className="font-bold text-[#F2EFE9] mt-0.5">{zone.drainage}</div>
+                      </div>
+
+                      <div className="p-2 rounded-lg bg-[#0E0E10]/80 border border-white/[0.05]">
+                        <div className="flex items-center justify-center gap-1 text-[11px] text-[#A39E93] font-mono">
+                          <Lightbulb size={12} /> Light
+                        </div>
+                        <div className="font-bold text-[#F2EFE9] mt-0.5">{zone.lighting}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Compounding Risk Insight */}
+                  <div className="mt-5 pt-4 border-t border-white/[0.04]">
+                    <div className="text-[11px] text-[#78736A] font-mono mb-1">COMPOUNDING VULNERABILITY:</div>
+                    <p className="text-xs text-[#A39E93] leading-relaxed font-sans">
+                      {zone.compoundInsight}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Reveal>
+
+        {/* Section bottom dashed amber lane divider */}
         <div className="rw-lane mt-20" />
       </div>
     </section>

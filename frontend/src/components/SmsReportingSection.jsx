@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { FONT_DISPLAY } from "@/theme";
 import Eyebrow from "./Eyebrow";
 import Reveal from "./Reveal";
 import {
@@ -165,7 +166,7 @@ export default function SmsReportingSection() {
         body: JSON.stringify({ message: query }),
       }).catch(() => {});
     } catch {
-      // Handled gracefully
+      // Ignored: client-side engine guarantees instant response
     }
 
     // 2. Realistic response delay for NLP parsing & bot dispatching
@@ -248,17 +249,17 @@ export default function SmsReportingSection() {
   ];
 
   return (
-    <section id="sms-reporting" className="relative py-24 bg-[#F8FAFC] overflow-hidden" data-testid="sms-reporting-section">
+    <section id="sms-reporting" className="relative py-24 asphalt-bg overflow-hidden" data-testid="sms-reporting-section">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         
         {/* Section Header */}
         <Reveal>
           <div className="max-w-3xl">
             <Eyebrow text="/ OFFLINE & ACCESSIBILITY HOTLINE" />
-            <h2 className="font-display font-extrabold text-4xl md:text-5xl text-[#12304A] mt-1 leading-[1.08]">
-              Civic reporting for <span className="text-[#F97316]">every citizen.</span>
+            <h2 className={`${FONT_DISPLAY} text-4xl md:text-5xl text-[#F2EFE9] mt-1 leading-[1.08]`}>
+              Civic reporting for <span className="text-[#E59518]">every citizen.</span>
             </h2>
-            <p className="mt-3 text-base md:text-lg text-[#64748B] leading-relaxed">
+            <p className="mt-3 text-base md:text-lg text-[#A39E93] leading-relaxed">
               Not everyone has a high-end smartphone or unlimited data plan. RoadWatch operates an automated 24/7 SMS and
               WhatsApp hotline that empowers daily commuters, auto drivers, and senior citizens to log road hazards in seconds.
             </p>
@@ -271,7 +272,7 @@ export default function SmsReportingSection() {
             
             {/* Phone Mockup (5 cols on lg) */}
             <div className="lg:col-span-5 flex justify-center">
-              <div className="w-full max-w-sm rounded-[36px] bg-[#0E0E10] border-4 border-slate-700 shadow-2xl overflow-hidden relative flex flex-col ring-8 ring-slate-100">
+              <div className="w-full max-w-sm rounded-[36px] bg-[#0E0E10] border-4 border-zinc-800 shadow-2xl overflow-hidden relative flex flex-col">
                 
                 {/* Smartphone Top Notch & Status Bar */}
                 <div className="bg-[#141416] px-6 pt-3 pb-2 flex items-center justify-between text-[11px] font-mono text-[#A39E93] border-b border-white/[0.04] select-none">
@@ -279,23 +280,23 @@ export default function SmsReportingSection() {
                   <div className="w-20 h-3.5 bg-black/80 rounded-full" />
                   <div className="flex items-center gap-1.5 text-[10px]">
                     <span className="font-semibold">5G</span>
-                    <span className="w-4 h-2 rounded-sm border border-zinc-400 inline-block bg-[#16A34A]" />
+                    <span className="w-4 h-2 rounded-sm border border-zinc-400 inline-block bg-[#3EA370]" />
                   </div>
                 </div>
 
                 {/* Chat App Header */}
                 <div className="bg-[#141416] px-4 py-3 flex items-center justify-between border-b border-white/[0.06] select-none">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-full bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400 shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-[#E59518]/10 border border-[#E59518]/25 flex items-center justify-center text-[#E59518] shrink-0">
                       <WhatsappLogo size={20} weight="fill" />
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
                         <span className="font-bold text-sm text-[#F2EFE9]">RoadWatch Hotline</span>
-                        <ShieldCheck size={14} className="text-[#F97316]" weight="fill" />
+                        <ShieldCheck size={14} className="text-[#E59518]" weight="fill" />
                       </div>
-                      <div className="text-[10px] text-[#16A34A] font-mono flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] animate-pulse" />
+                      <div className="text-[10px] text-[#3EA370] font-mono flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#3EA370] animate-pulse" />
                         +91 98712 34567 · Official Bot
                       </div>
                     </div>
@@ -305,7 +306,7 @@ export default function SmsReportingSection() {
                       type="button"
                       onClick={handleResetChat}
                       title="Reset chat simulation"
-                      className="text-[#78736A] hover:text-[#F2EFE9] bg-white/[0.04] hover:bg-white/[0.08] p-1.5 rounded transition-colors cursor-pointer"
+                      className="text-[#78736A] hover:text-[#F2EFE9] bg-white/[0.04] hover:bg-white/[0.08] p-1.5 rounded transition-colors"
                     >
                       <ArrowClockwise size={13} />
                     </button>
@@ -332,7 +333,7 @@ export default function SmsReportingSection() {
                     if (msg.sender === "user") {
                       return (
                         <div key={msg.id} className="flex flex-col items-end">
-                          <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-[#F97316] text-white p-3 shadow font-medium leading-relaxed break-words">
+                          <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-[#E59518] text-[#0E0E10] p-3 shadow font-medium leading-relaxed break-words">
                             {msg.text}
                           </div>
                           <span className="text-[9px] text-[#78736A] mt-1 font-mono">
@@ -345,8 +346,8 @@ export default function SmsReportingSection() {
                     if (msg.type === "report_card") {
                       return (
                         <div key={msg.id} className="flex flex-col items-start w-full">
-                          <div className="max-w-[92%] rounded-2xl rounded-tl-sm bg-[#18181B] border border-[#F97316]/30 text-[#F2EFE9] p-3 shadow-md leading-relaxed">
-                            <div className="font-bold text-[#F97316] flex items-center gap-1.5 text-[11px] mb-1.5">
+                          <div className="max-w-[92%] rounded-2xl rounded-tl-sm bg-[#18181B] border border-[#E59518]/30 text-[#F2EFE9] p-3 shadow-md leading-relaxed">
+                            <div className="font-bold text-[#E59518] flex items-center gap-1.5 text-[11px] mb-1.5">
                               <CheckCircle size={15} weight="fill" /> REPORT FILED: #{msg.ticketId}
                             </div>
                             <div className="text-[11px] space-y-1 text-[#F2EFE9]/90 font-mono">
@@ -356,12 +357,12 @@ export default function SmsReportingSection() {
                             </div>
                             <div className="mt-2.5 pt-2 border-t border-white/[0.06] flex items-center justify-between gap-2 flex-wrap">
                               <p className="text-[10px] text-[#A39E93]">
-                                Track at <strong className="text-[#F97316]">roadwatch.in/t/{msg.ticketId}</strong> or reply <code className="text-[#F2EFE9]">STATUS</code>
+                                Track at <strong className="text-[#E59518]">roadwatch.in/t/{msg.ticketId}</strong> or reply <code className="text-[#F2EFE9]">STATUS</code>
                               </p>
                               <button
                                 type="button"
                                 onClick={() => handleCheckStatus(msg.ticketId)}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#F97316]/15 hover:bg-[#F97316]/25 text-[#F97316] text-[10px] font-mono font-semibold transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#E59518]/15 hover:bg-[#E59518]/25 text-[#E59518] text-[10px] font-mono font-semibold transition-colors cursor-pointer"
                               >
                                 Check STATUS →
                               </button>
@@ -377,8 +378,8 @@ export default function SmsReportingSection() {
                     if (msg.type === "status_card") {
                       return (
                         <div key={msg.id} className="flex flex-col items-start w-full">
-                          <div className="max-w-[90%] rounded-xl rounded-tl-sm bg-[#18181B] border border-emerald-500/30 text-[#F2EFE9] p-2.5 text-[11px] leading-relaxed">
-                            <span className="text-[#16A34A] font-semibold">{msg.text}</span>
+                          <div className="max-w-[90%] rounded-xl rounded-tl-sm bg-[#18181B] border border-[#3EA370]/30 text-[#F2EFE9] p-2.5 text-[11px] leading-relaxed">
+                            <span className="text-[#3EA370] font-semibold">{msg.text}</span>
                           </div>
                           <span className="text-[9px] text-[#78736A] mt-0.5 font-mono">
                             {msg.time} · Realtime Dispatch Sync
@@ -394,9 +395,9 @@ export default function SmsReportingSection() {
                   {isTyping && (
                     <div className="flex flex-col items-start">
                       <div className="rounded-xl rounded-tl-sm bg-[#18181B] border border-white/[0.08] px-3 py-2 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#F97316] animate-bounce" style={{ animationDelay: "0ms" }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#F97316] animate-bounce" style={{ animationDelay: "150ms" }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#F97316] animate-bounce" style={{ animationDelay: "300ms" }} />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#E59518] animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#E59518] animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#E59518] animate-bounce" style={{ animationDelay: "300ms" }} />
                         <span className="text-[10px] text-[#A39E93] font-mono ml-1">Parsing landmark & dispatching...</span>
                       </div>
                     </div>
@@ -433,12 +434,12 @@ export default function SmsReportingSection() {
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Text a road issue or 'STATUS'..."
                     disabled={isTyping}
-                    className="flex-1 bg-white/[0.05] border border-white/[0.08] focus:border-[#F97316]/60 focus:bg-white/[0.08] rounded-full px-3.5 py-1.5 text-xs text-[#F2EFE9] placeholder-[#78736A] outline-none transition-all disabled:opacity-60"
+                    className="flex-1 bg-white/[0.05] border border-white/[0.08] focus:border-[#E59518]/60 focus:bg-white/[0.08] rounded-full px-3.5 py-1.5 text-xs text-[#F2EFE9] placeholder-[#78736A] outline-none transition-all disabled:opacity-60"
                   />
                   <button
                     type="submit"
                     disabled={!inputText.trim() || isTyping}
-                    className="w-8 h-8 rounded-full bg-[#F97316] hover:bg-[#EA580C] disabled:opacity-30 disabled:hover:bg-[#F97316] flex items-center justify-center text-white transition-colors shrink-0 cursor-pointer shadow"
+                    className="w-8 h-8 rounded-full bg-[#E59518] hover:bg-[#F2A229] disabled:opacity-30 disabled:hover:bg-[#E59518] flex items-center justify-center text-[#0E0E10] transition-colors shrink-0 cursor-pointer shadow"
                     title="Send SMS"
                   >
                     <PaperPlaneRight size={14} weight="bold" />
@@ -449,27 +450,27 @@ export default function SmsReportingSection() {
 
             {/* Description & Impact Details (7 cols on lg) */}
             <div className="lg:col-span-7 flex flex-col justify-center">
-              <div className="rounded-2xl p-6 md:p-8 border border-[#E2E8F0] bg-white shadow-sm">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono text-[#0F766E] bg-teal-50 border border-teal-200 font-semibold mb-4">
+              <div className="rounded-2xl p-6 md:p-8 border border-white/[0.08] bg-[#141416]/95 backdrop-blur-md">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono text-[#E59518] bg-[#E59518]/10 border border-[#E59518]/25 mb-4">
                   <Broadcast size={14} className="animate-pulse" />
                   TWO-WAY MULTI-CHANNEL TELEPHONY
                 </div>
 
-                <h3 className="font-display text-2xl md:text-3xl text-[#12304A] font-extrabold leading-tight">
+                <h3 className={`${FONT_DISPLAY} text-2xl md:text-3xl text-[#F2EFE9] font-bold leading-tight`}>
                   Zero app required. Just text the road problem.
                 </h3>
 
-                <p className="mt-3 text-sm md:text-base text-[#64748B] leading-relaxed">
+                <p className="mt-3 text-sm md:text-base text-[#A39E93] leading-relaxed">
                   Citizens on basic feature phones or intermittent 2G coverage can send an SMS or WhatsApp voice note.
                   The RoadWatch NLP pipeline parses landmarks, cross-references municipal boundary maps, and issues an
                   immediate confirmation with live ticket tracking.
                 </p>
 
                 {/* Twilio & WhatsApp callout */}
-                <div className="mt-6 p-4 rounded-xl bg-teal-50/70 border border-teal-200 flex items-start gap-3">
-                  <DeviceMobile size={22} className="text-[#0F766E] shrink-0 mt-0.5" />
-                  <div className="text-xs md:text-sm text-[#0F172A]">
-                    <strong className="text-[#0F766E] block font-semibold mb-0.5">
+                <div className="mt-6 p-4 rounded-xl bg-[#E59518]/[0.08] border border-[#E59518]/25 flex items-start gap-3">
+                  <DeviceMobile size={22} className="text-[#E59518] shrink-0 mt-0.5" />
+                  <div className="text-xs md:text-sm text-[#F2EFE9]">
+                    <strong className="text-[#E59518] block font-semibold mb-0.5">
                       Enterprise Communication Infrastructure
                     </strong>
                     "Powered by Twilio / WhatsApp Business API — reaches citizens without smartphones or data plans."
@@ -477,25 +478,25 @@ export default function SmsReportingSection() {
                 </div>
 
                 {/* Key stats row */}
-                <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3 pt-6 border-t border-[#F1F5F9] text-center">
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-[#E2E8F0]">
-                    <div className="font-display font-extrabold text-2xl text-[#F97316]">48%</div>
-                    <div className="text-[11px] text-[#64748B] font-mono mt-0.5 font-medium">Reports via SMS/Chat</div>
+                <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3 pt-6 border-t border-white/[0.06] text-center">
+                  <div className="p-3 rounded-lg bg-[#0E0E10]/80 border border-white/[0.05]">
+                    <div className="font-display font-black text-2xl text-[#E59518]">48%</div>
+                    <div className="text-[11px] text-[#A39E93] font-mono mt-0.5">Reports via SMS/Chat</div>
                   </div>
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-[#E2E8F0]">
-                    <div className="font-display font-extrabold text-2xl text-[#12304A]">&lt; 3 sec</div>
-                    <div className="text-[11px] text-[#64748B] font-mono mt-0.5 font-medium">Automated Ticket ID</div>
+                  <div className="p-3 rounded-lg bg-[#0E0E10]/80 border border-white/[0.05]">
+                    <div className="font-display font-black text-2xl text-[#F2EFE9]">&lt; 3 sec</div>
+                    <div className="text-[11px] text-[#A39E93] font-mono mt-0.5">Automated Ticket ID</div>
                   </div>
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-[#E2E8F0] col-span-2 sm:col-span-1">
-                    <div className="font-display font-extrabold text-2xl text-[#16A34A]">100%</div>
-                    <div className="text-[11px] text-[#64748B] font-mono mt-0.5 font-medium">Open Database Sync</div>
+                  <div className="p-3 rounded-lg bg-[#0E0E10]/80 border border-white/[0.05] col-span-2 sm:col-span-1">
+                    <div className="font-display font-black text-2xl text-[#3EA370]">100%</div>
+                    <div className="text-[11px] text-[#A39E93] font-mono mt-0.5">Open Database Sync</div>
                   </div>
                 </div>
 
                 {/* Interactive CTA to test the simulator */}
-                <div className="mt-6 pt-5 border-t border-[#F1F5F9] flex items-center justify-between flex-wrap gap-3">
-                  <div className="flex items-center gap-2 text-xs font-mono text-[#64748B]">
-                    <Sparkle size={14} className="text-[#F97316]" weight="fill" />
+                <div className="mt-6 pt-5 border-t border-white/[0.06] flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-2 text-xs font-mono text-[#A39E93]">
+                    <Sparkle size={14} className="text-[#E59518]" weight="fill" />
                     <span>Try testing the interactive phone simulator on the left</span>
                   </div>
                   <button
@@ -506,7 +507,7 @@ export default function SmsReportingSection() {
                         inputRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
                       }
                     }}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#F97316] hover:bg-[#EA580C] text-white transition-colors cursor-pointer shadow-xs"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-[#E59518] hover:bg-[#F2A229] text-[#0E0E10] transition-colors cursor-pointer shadow-sm"
                   >
                     <span>Test Hotline Simulator</span>
                     <ArrowRight size={13} weight="bold" />
@@ -517,43 +518,43 @@ export default function SmsReportingSection() {
           </div>
         </Reveal>
 
-        {/* 3-Step Visual below */}
+        {/* 3-Step Visual below using existing STEP / number pattern */}
         <Reveal delay={250} className="mt-12">
           <div className="grid md:grid-cols-3 gap-4">
             {steps.map(({ step, icon: Icon, title, desc, detail }) => (
               <div
                 key={step}
                 data-testid={`sms-step-${step}`}
-                className="rounded-2xl border border-[#E2E8F0] bg-white p-6 flex flex-col justify-between shadow-2xs transition-all duration-200 hover:border-orange-200 hover:shadow-sm hover:-translate-y-0.5"
+                className="rounded-2xl border border-white/[0.08] bg-[#141416]/95 p-6 flex flex-col justify-between transition-all duration-300 hover:border-[#E59518]/30 hover:-translate-y-0.5"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-4">
-                    <div className="w-11 h-11 rounded-xl bg-orange-50 border border-orange-200/80 flex items-center justify-center">
-                      <Icon size={22} className="text-[#F97316]" weight="duotone" />
+                    <div className="w-11 h-11 rounded-lg bg-[#E59518]/10 border border-[#E59518]/25 flex items-center justify-center">
+                      <Icon size={22} className="text-[#E59518]" weight="duotone" />
                     </div>
-                    <span className="font-mono text-xs font-bold text-[#EA580C] bg-orange-50 px-2 py-0.5 rounded border border-orange-200/50">
+                    <span className="font-mono text-xs font-bold text-[#E59518]">
                       STEP {step}
                     </span>
                   </div>
 
-                  <h4 className="font-display text-lg md:text-xl text-[#12304A] font-bold">
+                  <h4 className={`${FONT_DISPLAY} text-lg md:text-xl text-[#F2EFE9] font-bold`}>
                     {title}
                   </h4>
 
-                  <p className="mt-2 text-xs md:text-sm text-[#64748B] leading-relaxed">
+                  <p className="mt-2 text-xs md:text-sm text-[#A39E93] leading-relaxed">
                     {desc}
                   </p>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-[#F1F5F9] text-[11px] text-[#64748B] font-mono flex items-center gap-1.5 font-medium">
-                  <ArrowRight size={12} className="text-[#F97316]" /> {detail}
+                <div className="mt-5 pt-3 border-t border-white/[0.04] text-[11px] text-[#78736A] font-mono flex items-center gap-1.5">
+                  <ArrowRight size={12} className="text-[#E59518]" /> {detail}
                 </div>
               </div>
             ))}
           </div>
         </Reveal>
 
-        {/* Section bottom dashed lane divider */}
+        {/* Section bottom dashed amber lane divider */}
         <div className="rw-lane mt-20" />
       </div>
     </section>

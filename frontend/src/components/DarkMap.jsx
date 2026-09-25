@@ -10,8 +10,8 @@ function makeIcon(cls) {
   return new L.DivIcon({
     className: "",
     html: `<div class="roadwatch-marker ${cls}"></div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
   });
 }
 
@@ -36,22 +36,17 @@ export default function DarkMap({
   center = [28.4595, 77.0266],
   zoom = 12,
   markers = [],
-  height = 440,
+  height = 420,
   onPick = null,
   pickedMarker = null,
 }) {
   return (
     <div
-      className="rounded-2xl overflow-hidden border border-[#E2E8F0] shadow-sm bg-white relative"
+      className="rounded-2xl overflow-hidden border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.6)] relative"
       style={{ height }}
       data-testid="dark-map"
     >
-      <MapContainer
-        center={center}
-        zoom={zoom}
-        style={{ height: "100%", width: "100%", background: "#F8FAFC" }}
-        scrollWheelZoom={false}
-      >
+      <MapContainer center={center} zoom={zoom} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -64,14 +59,10 @@ export default function DarkMap({
           !isNaN(pickedMarker.lat) &&
           !isNaN(pickedMarker.lng) && (
             <Marker position={[pickedMarker.lat, pickedMarker.lng]} icon={iconCritical}>
-              <Popup>
-                <div className="font-sans text-xs p-1">
-                  <strong className="text-[#12304A]">Selected GPS Point</strong>
-                </div>
-              </Popup>
+              <Popup>Picked location</Popup>
             </Marker>
           )}
-        {markers
+        {(markers || [])
           .filter(
             (m) =>
               m &&
@@ -81,52 +72,19 @@ export default function DarkMap({
               !isNaN(m.longitude)
           )
           .map((m, i) => (
-            <Marker key={m.id || i} position={[m.latitude, m.longitude]} icon={pickIcon(m)}>
+          <Marker key={m.id || i} position={[m.latitude, m.longitude]} icon={pickIcon(m)}>
             <Popup>
-              <div style={{ fontFamily: "'Inter', system-ui, sans-serif", minWidth: 200, padding: "2px" }}>
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <span
-                    style={{
-                      fontWeight: 700,
-                      fontSize: 13,
-                      color: m.status === "RESOLVED" ? "#16A34A" : "#12304A",
-                    }}
-                  >
-                    {m.category}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontFamily: "monospace",
-                      padding: "2px 6px",
-                      borderRadius: 4,
-                      backgroundColor:
-                        m.severity === "CRITICAL"
-                          ? "#FEE2E2"
-                          : m.status === "RESOLVED"
-                          ? "#DCFCE7"
-                          : "#FEF3C7",
-                      color:
-                        m.severity === "CRITICAL"
-                          ? "#DC2626"
-                          : m.status === "RESOLVED"
-                          ? "#16A34A"
-                          : "#D97706",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {m.status === "RESOLVED" ? "RESOLVED" : m.severity}
-                  </span>
+              <div style={{ fontFamily: "'IBM Plex Sans'", minWidth: 180 }}>
+                <div style={{ fontWeight: 700, color: m.status === "RESOLVED" ? "#10B981" : "#F59E0B" }}>
+                  {m.category}
                 </div>
-                <div style={{ fontSize: 12, color: "#475569", marginBottom: 4 }}>
-                  {m.road_name || "Municipal Corridor"}
-                </div>
-                <div style={{ fontSize: 11, color: "#64748B", borderTop: "1px solid #E2E8F0", paddingTop: 4 }}>
-                  Authority: <strong style={{ color: "#12304A" }}>{m.authority || "PWD Gurugram"}</strong>
+                <div style={{ fontSize: 12 }}>{m.road_name || "Unknown road"}</div>
+                <div style={{ fontSize: 11, color: "#666", marginTop: 4 }}>
+                  Severity: {m.severity} · Status: {m.status}
                 </div>
                 {m.status === "RESOLVED" && (
-                  <div style={{ fontSize: 11, color: "#16A34A", marginTop: 4, fontWeight: 600 }}>
-                    ✓ Verified & Healed by Authority
+                  <div style={{ fontSize: 10, color: "#10B981", marginTop: 4, fontWeight: 600 }}>
+                    ✓ Healed by the city
                   </div>
                 )}
               </div>
@@ -135,8 +93,8 @@ export default function DarkMap({
         ))}
       </MapContainer>
       {onPick && (
-        <div className="absolute bottom-3 left-3 px-3.5 py-1.5 rounded-full bg-white/95 border border-[#CBD5E1] shadow-md text-xs font-mono font-medium text-[#12304A] pointer-events-none">
-          📍 Tip: Click anywhere on the road map to drop a pin
+        <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-full glass text-[11px] font-mono text-amber-300 pointer-events-none">
+          Tip: click the map to drop a pin
         </div>
       )}
     </div>
