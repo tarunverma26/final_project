@@ -84,3 +84,9 @@ class ResolveReportRequest(BaseModel):
     source: Literal["exif", "browser_gps"] = "browser_gps"
     supervisor_override: bool = False
 
+
+class SMSSimulateRequest(BaseModel):
+    message: str
+    phone: Optional[str] = "+91 98712 34567"
+
+

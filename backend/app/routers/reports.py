@@ -9,7 +9,7 @@ from app.database import db
 from app.config import TIMELINE_STEPS, AUTHORITY_LIST
 from app.models.report import (
     ReportCreate, Report, RateReport,
-    UpdateReportStatus, ResolveReportRequest
+    UpdateReportStatus, ResolveReportRequest, SMSSimulateRequest
 )
 from app.models.common import GeoJSONPoint
 from app.services.storage import is_base64_data_url, save_base64_image
@@ -442,3 +442,117 @@ async def rate_report(report_id: str, payload: RateReport, user: dict = Depends(
     )
     doc["citizen_rating"] = payload.rating
     return Report(**doc)
+
+
+@router.post("/sms-simulate")
+async def simulate_sms_report(payload: SMSSimulateRequest):
+    """
+    Public SMS hotline webhook / interactive simulation.
+    Accepts raw text from citizen SMS/WhatsApp, extracts road landmarks & hazards,
+    infers authority, and logs a real or simulated report with auto-generated ticket ID.
+    """
+    text = payload.message.strip()
+    if not text:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Message cannot be empty")
+
+    upper_text = text.upper()
+    now_str = datetime.now(timezone.utc).strftime("%I:%M %p")
+
+    # If asking for status
+    if "STATUS" in upper_text or "TRACK" in upper_text:
+        return {
+            "type": "status_update",
+            "reply": "🚜 Work Scheduled: Crew assigned under Eng. R. Sharma (PWD). Expected patch repair within 48 hours.",
+            "timestamp": now_str,
+            "status": "IN_PROGRESS",
+            "details": {
+                "assigned_officer": "Eng. R. Sharma (PWD Gurugram)",
+                "scheduled_sla": "48 hours",
+                "stage": "WORK_SCHEDULED"
+            }
+        }
+
+    # NLP extraction for road/landmark
+    road_name = "MG Road, Gurugram"
+    lower_text = text.lower()
+    if "iffco" in lower_text:
+        road_name = "MG Road, near IFFCO Chowk Metro Pillar 142"
+    elif "cyber city" in lower_text or "cyber hub" in lower_text:
+        road_name = "DLF Cyber City Gateway, Gurugram"
+    elif "ring road" in lower_text:
+        road_name = "Ring Road Flyover, New Delhi"
+    elif "nh-48" in lower_text or "nh 48" in lower_text or "highway" in lower_text:
+        road_name = "Delhi-Jaipur Highway (NH-48), Kherki Daula"
+    elif "sector" in lower_text:
+        import re
+        sec_match = re.search(r"sector\s*\d+", lower_text)
+        road_name = f"{sec_match.group(0).title()} Main Road" if sec_match else "Sector 14 Corridor"
+    elif "sohna" in lower_text:
+        road_name = "Sohna Elevated Corridor"
+    elif len(text.split()) > 2:
+        road_name = " ".join(text.split()[:4]).strip(".,")
+
+    # NLP extraction for hazard
+    if any(k in lower_text for k in ["pothole", "crater", "hole", "slip", "pit"]):
+        category = "Pothole"
+        hazard_desc = "Critical Pothole & Slip Risk"
+        severity = "CRITICAL"
+    elif any(k in lower_text for k in ["water", "flood", "rain", "drain", "waterlog"]):
+        category = "Waterlogging"
+        hazard_desc = "Severe Waterlogging & Drainage Blockage"
+        severity = "HIGH"
+    elif any(k in lower_text for k in ["light", "dark", "lamp", "pole", "streetlight"]):
+        category = "Streetlight"
+        hazard_desc = "Streetlight Outage / Zero Night Visibility"
+        severity = "MEDIUM"
+    elif any(k in lower_text for k in ["garbage", "trash", "waste", "debris", "dirt"]):
+        category = "Garbage / Debris"
+        hazard_desc = "Construction Debris & Road Obstruction"
+        severity = "MEDIUM"
+    elif any(k in lower_text for k in ["divider", "median", "barrier", "crack"]):
+        category = "Damaged Divider"
+        hazard_desc = "Broken Median Barrier / Structural Hazard"
+        severity = "HIGH"
+    else:
+        category = "Road Distress"
+        hazard_desc = "Road Surface Hazard & Commuter Risk"
+        severity = "MEDIUM"
+
+    authority = infer_authority_for_issue(road_name, category)
+    ticket_num = random.randint(8000, 9999)
+    ticket_id = f"RW-{ticket_num}"
+
+    # Also record in MongoDB if available
+    doc_id = str(uuid.uuid4())
+    report_doc = {
+        "id": doc_id,
+        "ticket_id": ticket_id,
+        "user_id": "sms-citizen",
+        "user_name": f"SMS Citizen ({payload.phone[-4:] if payload.phone else 'Hotline'})",
+        "category": category,
+        "severity": severity,
+        "description": text,
+        "latitude": 28.4735,
+        "longitude": 77.0783,
+        "road_name": road_name,
+        "authority": authority,
+        "status": "reported",
+        "source": "sms",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "timeline": initial_timeline(),
+    }
+    try:
+        await db.reports.insert_one(report_doc)
+    except Exception as e:
+        logger.warning(f"Could not persist SMS report to DB: {e}")
+
+    return {
+        "type": "report_filed",
+        "ticket_id": ticket_id,
+        "location": road_name,
+        "hazard": hazard_desc,
+        "authority": f"{authority} (Zone Assigned)",
+        "timestamp": now_str,
+        "reply": f"REPORT FILED: #{ticket_id}\n📍 {road_name}\n⚠️ Hazard: {hazard_desc}\n🏛️ Routed: {authority}\nTrack status at roadwatch.in/t/{ticket_id} or reply STATUS."
+    }
+
